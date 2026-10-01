@@ -1,13 +1,19 @@
 ---
 /**
- * Signature diagram for each product. PLACEHOLDER: the steps below are illustrative and must be replaced
- * with the real workflow and status names from the product team. The animated versions (GSAP, state
- * changes over time) come after that; see the gsap-motion skill.
+ * Each product's signature diagram: a small workflow that plays through its states (idle → active /
+ * flowing → success, with warnings and errors surfacing), so the visual system itself shows what the
+ * product does. PLACEHOLDER: steps and wording are illustrative until the product team confirms the real
+ * workflow and status names.
+ *
+ * Plays only while on screen, has a pause/play control, starts paused for reduced motion, and renders a
+ * meaningful still frame (`still`) without JavaScript.
  */
+import { Icon } from 'astro-icon/components';
 import type { State } from '../../lib/state';
 import StateMarker from '../ui/StateMarker.astro';
 
 type Diagram = 'deal-pipeline' | 'valuation-tracker' | 'agent-workflow';
+type Frame = [State, string][]; // one [state, note] per step
 
 interface Props {
 	diagram: Diagram;
@@ -18,61 +24,120 @@ interface Props {
 
 const { diagram, windowTitle, class: className } = Astro.props;
 
+/** Builds frames for a simple left-to-right pipeline: done steps settle, the current one is active. */
+function pipeline(notes: { idle: string; active: string; success: string }[]): Frame[] {
+	const frames: Frame[] = [];
+	for (let k = 0; k <= notes.length; k++) {
+		frames.push(
+			notes.map((n, i) =>
+				i < k ? ['success', n.success] : i === k ? ['active', n.active] : ['idle', n.idle],
+			),
+		);
+	}
+	return frames;
+}
+
 const diagrams: Record<
 	Diagram,
-	{ title: string; steps: { label: string; note: string; state: State }[] }
+	{ title: string; steps: string[]; frames: Frame[]; still: number }
 > = {
 	'deal-pipeline': {
 		title: 'Working capital renewal',
-		steps: [
-			{ label: 'Lead captured', note: 'From RM visit', state: 'success' },
-			{ label: 'Pricing approved', note: 'Within RM authority', state: 'success' },
-			{ label: 'Credit review', note: 'Awaiting financials', state: 'active' },
-			{ label: 'Sanction', note: 'Not started', state: 'idle' },
-		],
+		steps: ['Lead captured', 'Pricing approved', 'Credit review', 'Sanction'],
+		frames: pipeline([
+			{ idle: 'Not started', active: 'Capturing details', success: 'From RM visit' },
+			{ idle: 'Not started', active: 'Checking authority', success: 'Within RM authority' },
+			{ idle: 'Not started', active: 'Awaiting financials', success: 'Approved' },
+			{ idle: 'Not started', active: 'Preparing letter', success: 'Sanctioned' },
+		]),
+		still: 2,
 	},
 	'valuation-tracker': {
 		title: 'Collateral: commercial property',
-		steps: [
-			{ label: 'Valuation', note: 'Current', state: 'success' },
-			{ label: 'Insurance', note: 'Expires in 12 days', state: 'warning' },
-			{ label: 'Legal report', note: 'Current', state: 'success' },
-			{ label: 'Charge registration', note: 'Missing', state: 'error' },
+		steps: ['Valuation', 'Insurance', 'Legal report', 'Charge registration'],
+		frames: [
+			[
+				['success', 'Current'],
+				['success', 'Current'],
+				['success', 'Current'],
+				['error', 'Missing'],
+			],
+			[
+				['success', 'Current'],
+				['warning', 'Expires in 12 days'],
+				['success', 'Current'],
+				['error', 'Missing'],
+			],
+			[
+				['success', 'Current'],
+				['active', 'Renewal requested'],
+				['success', 'Current'],
+				['active', 'Filing with ROC'],
+			],
+			[
+				['success', 'Current'],
+				['success', 'Renewed'],
+				['success', 'Current'],
+				['active', 'Filing with ROC'],
+			],
+			[
+				['success', 'Current'],
+				['success', 'Renewed'],
+				['success', 'Current'],
+				['success', 'Registered'],
+			],
 		],
+		still: 1,
 	},
 	'agent-workflow': {
 		title: 'Pricing exception request',
-		steps: [
-			{ label: 'Request received', note: 'Email with attachment', state: 'success' },
-			{ label: 'Reading documents', note: 'AI extracting terms', state: 'flowing' },
-			{ label: 'Control check', note: 'Queued', state: 'idle' },
-			{ label: 'Approval', note: 'Queued', state: 'idle' },
+		steps: ['Request received', 'Reading documents', 'Control check', 'Approval'],
+		frames: [
+			[
+				['success', 'Email with attachment'],
+				['flowing', 'AI extracting terms'],
+				['idle', 'Queued'],
+				['idle', 'Queued'],
+			],
+			[
+				['success', 'Email with attachment'],
+				['success', 'Terms extracted'],
+				['active', 'Checking limits'],
+				['idle', 'Queued'],
+			],
+			[
+				['success', 'Email with attachment'],
+				['success', 'Terms extracted'],
+				['warning', 'Above RM limit'],
+				['active', 'Routed to credit head'],
+			],
+			[
+				['success', 'Email with attachment'],
+				['success', 'Terms extracted'],
+				['success', 'Exception logged'],
+				['success', 'Approved'],
+			],
 		],
+		still: 0,
 	},
 };
 
-const { title, steps } = diagrams[diagram];
-
-const tone = {
-	idle: 'text-state-idle',
-	active: 'text-state-active',
-	flowing: 'text-state-flowing',
-	success: 'text-state-success',
-	warning: 'text-state-warning',
-	error: 'text-state-error',
-} satisfies Record<State, string>;
+const { title, steps, frames, still } = diagrams[diagram];
+const initial = frames[still];
 ---
 
 <figure
+	data-diagram
+	data-frames={JSON.stringify(frames)}
 	class:list={[
-		'overflow-hidden rounded-xl border border-line bg-panel',
+		'diagram overflow-hidden rounded-xl border border-line bg-panel',
 		windowTitle && 'shadow-window',
 		className,
 	]}
 >
 	{windowTitle && (
-		<div class="flex items-center gap-3 border-b border-line px-4 py-2.5" aria-hidden="true">
-			<span class="flex gap-1.5">
+		<div class="flex items-center gap-3 border-b border-line px-4 py-2.5">
+			<span class="flex gap-1.5" aria-hidden="true">
 				<i class="size-2.5 rounded-full bg-line"></i>
 				<i class="size-2.5 rounded-full bg-line"></i>
 				<i class="size-2.5 rounded-full bg-line"></i>
@@ -81,25 +146,142 @@ const tone = {
 		</div>
 	)}
 	<div class="p-5 sm:p-6">
-		<figcaption class="mb-4 flex items-baseline justify-between gap-4">
+		<figcaption class="mb-4 flex items-center justify-between gap-4">
 			<span class="text-small font-medium">{title}</span>
-			<span class="text-label text-muted">Illustration</span>
+			<span class="flex items-center gap-2">
+				<span class="text-label text-muted">Illustration</span>
+				<button
+					type="button"
+					data-toggle
+					hidden
+					class="relative z-10 grid size-7 place-items-center rounded-sm text-muted hover:bg-ink/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-brand"
+					aria-label="Pause animation"
+				>
+					<Icon name="lucide:pause" class="size-3.5" data-icon="pause" aria-hidden="true" />
+					<Icon name="lucide:play" class="hidden size-3.5" data-icon="play" aria-hidden="true" />
+				</button>
+			</span>
 		</figcaption>
 		<ol class="grid gap-2">
-			{steps.map((step) => (
+			{steps.map((label, i) => (
 				<li
-					class:list={[
-						'state-type grid grid-cols-[1rem_1fr_auto] items-center gap-3 rounded-lg border border-line px-3 py-2.5',
-						// Finished steps settle to ink; only their marker stays green.
-						step.state === 'success' ? 'text-ink' : tone[step.state],
-					]}
-					data-state={step.state}
+					data-step
+					data-state={initial[i][0]}
+					class="state-type grid grid-cols-[1rem_1fr_auto] items-center gap-3 rounded-lg border border-line px-3 py-2.5"
 				>
-					<StateMarker state={step.state} class={tone[step.state]} />
-					<span>{step.label}</span>
-					<span class="text-label font-regular">{step.note}</span>
+					<StateMarker state={initial[i][0]} />
+					<span>{label}</span>
+					<span data-note class="text-label font-regular">
+						{initial[i][1]}
+					</span>
 				</li>
 			))}
 		</ol>
 	</div>
 </figure>
+
+<style>
+	/* State colours come from data-state so the script only has to flip attributes. */
+	.diagram li {
+		transition:
+			color var(--duration-fast) ease,
+			border-color var(--duration-fast) ease,
+			background-color var(--duration-fast) ease;
+	}
+	.diagram li[data-state='idle'] {
+		color: var(--idle);
+	}
+	.diagram li[data-state='active'] {
+		color: var(--brand-1);
+		border-color: color-mix(in oklab, var(--brand-1) 35%, var(--line));
+	}
+	.diagram li[data-state='flowing'] {
+		color: var(--flowing);
+		border-color: color-mix(in oklab, var(--flowing) 35%, var(--line));
+	}
+	.diagram li[data-state='success'] {
+		color: var(--ink);
+	}
+	.diagram li[data-state='success'] :global(.marker) {
+		color: var(--success);
+	}
+	.diagram li[data-state='warning'] {
+		color: var(--warning);
+		background: color-mix(in oklab, var(--warning) 6%, transparent);
+	}
+	.diagram li[data-state='error'] {
+		color: var(--error);
+		background: color-mix(in oklab, var(--error) 6%, transparent);
+	}
+</style>
+
+<script>
+	type Frame = [string, string][];
+	const STEP_MS = 1700;
+	const HOLD_MS = 2600; // pause on the last frame before looping
+	const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	document.querySelectorAll<HTMLElement>('[data-diagram]').forEach((fig) => {
+		const frames: Frame[] = JSON.parse(fig.dataset.frames ?? '[]');
+		const items = [...fig.querySelectorAll<HTMLElement>('[data-step]')];
+		const toggle = fig.querySelector<HTMLButtonElement>('[data-toggle]');
+		if (frames.length < 2 || !toggle) return;
+
+		let index = 0;
+		let timer = 0;
+		let visible = false;
+		let paused = reduce;
+
+		const show = (i: number) => {
+			frames[i].forEach(([state, note], s) => {
+				const li = items[s];
+				li.dataset.state = state;
+				li.querySelector<HTMLElement>('.marker')?.setAttribute('data-state', state);
+				const noteEl = li.querySelector<HTMLElement>('[data-note]');
+				if (noteEl) noteEl.textContent = note;
+			});
+		};
+		const schedule = () => {
+			clearTimeout(timer);
+			if (paused || !visible) return;
+			const last = index === frames.length - 1;
+			timer = window.setTimeout(
+				() => {
+					index = last ? 0 : index + 1;
+					show(index);
+					schedule();
+				},
+				last ? HOLD_MS : STEP_MS,
+			);
+		};
+		const syncToggle = () => {
+			toggle.setAttribute('aria-label', paused ? 'Play animation' : 'Pause animation');
+			toggle.querySelector('[data-icon="pause"]')?.classList.toggle('hidden', paused);
+			toggle.querySelector('[data-icon="play"]')?.classList.toggle('hidden', !paused);
+		};
+
+		toggle.hidden = false;
+		syncToggle();
+		toggle.addEventListener('click', (e) => {
+			e.preventDefault(); // the card behind is a link
+			e.stopPropagation();
+			paused = !paused;
+			syncToggle();
+			schedule();
+		});
+
+		new IntersectionObserver(
+			([entry]) => {
+				const wasVisible = visible;
+				visible = entry.isIntersecting;
+				if (visible && !wasVisible && !paused) {
+					// Start from the beginning each time it comes into view, so the story reads in order.
+					index = 0;
+					show(0);
+				}
+				schedule();
+			},
+			{ threshold: 0.4 },
+		).observe(fig);
+	});
+</script>

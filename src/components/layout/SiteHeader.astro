@@ -11,7 +11,11 @@ const link =
 	'rounded-md px-2.5 py-1.5 text-small text-muted transition-colors duration-(--duration-fast) hover:text-ink aria-[current=page]:text-ink';
 ---
 
-<header class="sticky top-0 z-40 border-b border-line bg-surface/90 backdrop-blur">
+<!--
+	Sits over the top of the page and scrolls away with it (not sticky), transparent so the hero ribbon
+	runs underneath, Stripe-style. Solid only while the mobile menu is open.
+-->
+<header class="absolute inset-x-0 top-0 z-40 has-[details[open]]:border-b has-[details[open]]:border-line has-[details[open]]:bg-surface">
 	<Container class="flex h-16 items-center gap-6">
 		<Logo />
 

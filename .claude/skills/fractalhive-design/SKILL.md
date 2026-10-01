@@ -125,6 +125,11 @@ customer logos, stats bands and case studies (we have no clients or metrics yet;
 - **Product bento:** `ProductBento`. Name + tagline two-tone top-left, arrow button top-right, the product UI
   (`ProductDiagram` with `windowTitle`) bleeding off the bottom-right over `bg-brand-wash`. Narrow cards don't
   bleed horizontally, so status text is never cut.
+- **Live diagrams:** `ProductDiagram` plays its workflow frames (state + note per step) while on screen,
+  ~1.7 s per frame, with a pause/play button (WCAG 2.2.2), paused for reduced motion, and a still frame
+  without JS. Add frames there when the product team confirms real flows.
+- **Header:** transparent and `absolute` over the page (not sticky); the home hero runs underneath it
+  (`<Layout underHeader>`). Buttons have sharp `rounded-sm` (4px) corners, like Stripe's.
 - **Layout guides:** hairline vertical lines at the content column edges (in `Layout.astro`, desktop only);
   sections separated by `border-t border-line`.
 - **Three-column reasons:** small bordered icon, bold lead-in + muted sentence, chevron link.

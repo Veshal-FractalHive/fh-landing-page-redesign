@@ -9,9 +9,11 @@ interface Props {
 	/** Page title without the company name; omit on the home page. */
 	title?: string;
 	description?: string;
+	/** The first section runs under the transparent header (home hero). Otherwise content starts below it. */
+	underHeader?: boolean;
 }
 
-const { title, description = site.description } = Astro.props;
+const { title, description = site.description, underHeader = false } = Astro.props;
 const fullTitle = title
 	? `${title} | ${site.name}`
 	: `${site.name}: ElevateRM, V-Track and NotifAI`;
@@ -45,7 +47,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 			Skip to content
 		</a>
 		<SiteHeader />
-		<main id="main" class="relative">
+		<main id="main" class:list={['relative', !underHeader && 'pt-16']}>
 			<!-- Stripe-style layout guides: hairlines at the content column's edges -->
 			<div
 				class="pointer-events-none absolute inset-y-0 left-1/2 -z-10 hidden w-full max-w-6xl -translate-x-1/2 border-x border-line/70 lg:block"

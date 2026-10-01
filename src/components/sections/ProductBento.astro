@@ -45,7 +45,7 @@ const span = ['lg:col-span-2', 'lg:col-span-1', 'lg:col-span-3'];
 				diagram={p.data.diagram}
 				windowTitle={p.data.name}
 				class:list={[
-					'relative -mb-4 ml-auto w-full',
+					'relative -mb-4 ml-auto w-full transition-transform duration-(--duration-base) ease-out group-hover:-translate-y-1.5',
 					// Wide cards bleed the window off the right edge (Stripe-style); the narrow card stays flush
 					// so status text is never cut off.
 					i !== 1 && 'sm:w-[min(36rem,calc(100%+2rem))] sm:translate-x-4',
