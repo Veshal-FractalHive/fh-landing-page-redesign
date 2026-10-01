@@ -1,0 +1,105 @@
+---
+/**
+ * Signature diagram for each product. PLACEHOLDER: the steps below are illustrative and must be replaced
+ * with the real workflow and status names from the product team. The animated versions (GSAP, state
+ * changes over time) come after that; see the gsap-motion skill.
+ */
+import type { State } from '../../lib/state';
+import StateMarker from '../ui/StateMarker.astro';
+
+type Diagram = 'deal-pipeline' | 'valuation-tracker' | 'agent-workflow';
+
+interface Props {
+	diagram: Diagram;
+	/** Product name shown in an app-window title bar, so the diagram reads as product UI (Stripe-style). */
+	windowTitle?: string;
+	class?: string;
+}
+
+const { diagram, windowTitle, class: className } = Astro.props;
+
+const diagrams: Record<
+	Diagram,
+	{ title: string; steps: { label: string; note: string; state: State }[] }
+> = {
+	'deal-pipeline': {
+		title: 'Working capital renewal',
+		steps: [
+			{ label: 'Lead captured', note: 'From RM visit', state: 'success' },
+			{ label: 'Pricing approved', note: 'Within RM authority', state: 'success' },
+			{ label: 'Credit review', note: 'Awaiting financials', state: 'active' },
+			{ label: 'Sanction', note: 'Not started', state: 'idle' },
+		],
+	},
+	'valuation-tracker': {
+		title: 'Collateral: commercial property',
+		steps: [
+			{ label: 'Valuation', note: 'Current', state: 'success' },
+			{ label: 'Insurance', note: 'Expires in 12 days', state: 'warning' },
+			{ label: 'Legal report', note: 'Current', state: 'success' },
+			{ label: 'Charge registration', note: 'Missing', state: 'error' },
+		],
+	},
+	'agent-workflow': {
+		title: 'Pricing exception request',
+		steps: [
+			{ label: 'Request received', note: 'Email with attachment', state: 'success' },
+			{ label: 'Reading documents', note: 'AI extracting terms', state: 'flowing' },
+			{ label: 'Control check', note: 'Queued', state: 'idle' },
+			{ label: 'Approval', note: 'Queued', state: 'idle' },
+		],
+	},
+};
+
+const { title, steps } = diagrams[diagram];
+
+const tone = {
+	idle: 'text-state-idle',
+	active: 'text-state-active',
+	flowing: 'text-state-flowing',
+	success: 'text-state-success',
+	warning: 'text-state-warning',
+	error: 'text-state-error',
+} satisfies Record<State, string>;
+---
+
+<figure
+	class:list={[
+		'overflow-hidden rounded-xl border border-line bg-panel',
+		windowTitle && 'shadow-window',
+		className,
+	]}
+>
+	{windowTitle && (
+		<div class="flex items-center gap-3 border-b border-line px-4 py-2.5" aria-hidden="true">
+			<span class="flex gap-1.5">
+				<i class="size-2.5 rounded-full bg-line"></i>
+				<i class="size-2.5 rounded-full bg-line"></i>
+				<i class="size-2.5 rounded-full bg-line"></i>
+			</span>
+			<span class="text-label text-muted">{windowTitle}</span>
+		</div>
+	)}
+	<div class="p-5 sm:p-6">
+		<figcaption class="mb-4 flex items-baseline justify-between gap-4">
+			<span class="text-small font-medium">{title}</span>
+			<span class="text-label text-muted">Illustration</span>
+		</figcaption>
+		<ol class="grid gap-2">
+			{steps.map((step) => (
+				<li
+					class:list={[
+						'state-type grid grid-cols-[1rem_1fr_auto] items-center gap-3 rounded-lg border border-line px-3 py-2.5',
+						// Finished steps settle to ink; only their marker stays green.
+						step.state === 'success' ? 'text-ink' : tone[step.state],
+					]}
+					data-state={step.state}
+				>
+					<StateMarker state={step.state} class={tone[step.state]} />
+					<span>{step.label}</span>
+					<span class="text-label font-regular">{step.note}</span>
+				</li>
+			))}
+		</ol>
+	</div>
+</figure>

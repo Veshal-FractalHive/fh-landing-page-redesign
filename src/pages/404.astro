@@ -1,0 +1,22 @@
+---
+import Button from '../components/ui/Button.astro';
+import Container from '../components/ui/Container.astro';
+import { nav } from '../config/site';
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Page not found">
+	<Container size="narrow" class="grid gap-6 py-24">
+		<h1>This page doesn't exist</h1>
+		<p class="text-lead text-muted">
+			It may have moved in our redesign. Try one of the products instead.
+		</p>
+		<div class="flex flex-wrap gap-3">
+			{nav.products.map((p) => (
+				<Button href={p.href} variant="secondary">
+					{p.label}
+				</Button>
+			))}
+		</div>
+	</Container>
+</Layout>

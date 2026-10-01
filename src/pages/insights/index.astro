@@ -1,0 +1,36 @@
+---
+import InsightList from '../../components/sections/InsightList.astro';
+import Container from '../../components/ui/Container.astro';
+import Todo from '../../components/ui/Todo.astro';
+import { getInsights, getProductNames } from '../../lib/content';
+import Layout from '../../layouts/Layout.astro';
+
+const insights = await getInsights();
+const productNames = await getProductNames();
+---
+
+<Layout
+	title="Insights"
+	description="Our team's thinking on relationship banking, collateral governance and banking operations."
+>
+	<Container class="grid gap-10 pt-14 sm:pt-20">
+		<div class="grid max-w-3xl gap-4">
+			<h1>Insights</h1>
+			<p class="text-lead text-muted">
+				What we're learning about relationship banking, collateral governance and operations, and
+				the thinking behind our products.
+			</p>
+		</div>
+		{import.meta.env.DEV && (
+			<Todo>
+				Drafts show here in development only. Check each article against LinkedIn, then set draft:
+				false.
+			</Todo>
+		)}
+		{insights.length > 0 ? (
+			<InsightList insights={insights} productNames={productNames} />
+		) : (
+			<p class="text-muted">Articles are on their way.</p>
+		)}
+	</Container>
+</Layout>

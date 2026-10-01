@@ -1,0 +1,29 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+	insights: CollectionEntry<'insights'>[];
+	productNames: Record<string, string>;
+}
+
+const { insights, productNames } = Astro.props;
+const fmt = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+---
+
+<ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+	{insights.map((post) => (
+		<li class="rounded-xl border border-line bg-panel">
+			<a href={`/insights/${post.id}`} class="group grid h-full content-start gap-3 p-6">
+				<p class="flex flex-wrap items-center gap-x-3 text-label text-muted">
+					{post.data.product && (
+						<span class="font-medium text-brand">{productNames[post.data.product.id]}</span>
+					)}
+					<time datetime={post.data.date.toISOString()}>{fmt.format(post.data.date)}</time>
+					{post.data.draft && <span class="text-state-warning">Draft</span>}
+				</p>
+				<h3 class="group-hover:text-brand">{post.data.title}</h3>
+				<p class="text-small text-muted">{post.data.summary}</p>
+			</a>
+		</li>
+	))}
+</ul>

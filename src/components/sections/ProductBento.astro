@@ -1,0 +1,57 @@
+---
+/**
+ * Stripe-style product bento: each card has its name and promise top-left, a link button top-right, and
+ * the product's UI (its state diagram in an app window) bleeding off the bottom-right over a brand wash.
+ * Layout: first product wide (2/3), second beside it, third full width.
+ */
+import type { CollectionEntry } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+import ProductDiagram from '../diagrams/ProductDiagram.astro';
+
+interface Props {
+	products: CollectionEntry<'products'>[];
+}
+
+const { products } = Astro.props;
+const span = ['lg:col-span-2', 'lg:col-span-1', 'lg:col-span-3'];
+---
+
+<ul class="grid gap-4 lg:grid-cols-3">
+	{products.map((p, i) => (
+		<li
+			id={p.id}
+			class:list={[
+				'group relative isolate grid scroll-mt-24 content-start gap-8 overflow-hidden rounded-2xl border border-line bg-panel pt-6 pl-6 sm:pt-8 sm:pl-8',
+				span[i],
+			]}
+		>
+			<div class="absolute inset-0 -z-10 bg-brand-wash opacity-70" aria-hidden="true"></div>
+			<div class="flex items-start justify-between gap-4 pr-6 sm:pr-8">
+				<h3 class="max-w-md text-h3 font-medium">
+					<a href={`/products/${p.id}`} class="after:absolute after:inset-0">
+						<span class="text-ink">{p.data.name}.</span>{' '}
+						<span class="text-muted">{p.data.tagline}</span>
+					</a>
+				</h3>
+				<span
+					class="grid size-8 flex-none place-items-center rounded-lg bg-brand/10 text-brand transition-transform duration-(--duration-fast) ease-out group-hover:translate-x-0.5"
+					aria-hidden="true"
+				>
+					<Icon name="lucide:arrow-up-right" class="size-4" />
+				</span>
+			</div>
+			<p class="-mt-4 max-w-md pr-6 text-small text-muted">{p.data.audience}</p>
+			<ProductDiagram
+				diagram={p.data.diagram}
+				windowTitle={p.data.name}
+				class:list={[
+					'relative -mb-4 ml-auto w-full',
+					// Wide cards bleed the window off the right edge (Stripe-style); the narrow card stays flush
+					// so status text is never cut off.
+					i !== 1 && 'sm:w-[min(36rem,calc(100%+2rem))] sm:translate-x-4',
+					i === 2 && 'lg:w-[min(44rem,70%)]',
+				]}
+			/>
+		</li>
+	))}
+</ul>

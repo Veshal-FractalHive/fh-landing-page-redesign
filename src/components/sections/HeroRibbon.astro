@@ -1,0 +1,156 @@
+---
+/**
+ * The page's one brand moment (Stripe-inspired): a folding gradient ribbon in the current logo colours,
+ * drawn by a small WebGL shader (no three.js; ~2 KB). Colours come from --brand-*, so it follows the
+ * rebrand. Static frame for reduced motion, paused when off screen, plain CSS gradient if WebGL is missing.
+ */
+---
+
+<div class="ribbon" aria-hidden="true">
+	<canvas data-ribbon class="block size-full"></canvas>
+</div>
+
+<style>
+	.ribbon {
+		position: absolute;
+		inset: 0 0 0 auto;
+		width: min(64vw, 940px);
+		pointer-events: none;
+		/* Fade towards the text column so the headline always sits on a calm background. */
+		mask-image: linear-gradient(to left, #000 45%, transparent 90%);
+	}
+	/* Fallback when WebGL isn't available */
+	.ribbon[data-fallback] {
+		background: linear-gradient(
+			135deg,
+			transparent 30%,
+			var(--brand-1) 45%,
+			var(--brand-2) 60%,
+			var(--brand-3) 75%,
+			transparent 90%
+		);
+		opacity: 0.8;
+	}
+	@media (max-width: 767px) {
+		.ribbon {
+			width: 100%;
+			opacity: 0.35;
+		}
+	}
+</style>
+
+<script>
+	const VERT = `attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }`;
+
+	// A ribbon running diagonally up and to the right, curving and twisting over time.
+	// Folds are light/shade bands across its width; colour runs along its length (brand 1 → 2 → 3).
+	const FRAG = `
+		precision highp float;
+		uniform vec2 r;
+		uniform float t;
+		uniform vec3 c1, c2, c3;
+		void main() {
+			vec2 p = gl_FragCoord.xy / r.y;
+			float aspect = r.x / r.y;
+			vec2 dir = normalize(vec2(1.0, 0.95));
+			vec2 nrm = vec2(-dir.y, dir.x);
+			vec2 q = p - vec2(aspect * 0.62, 0.42);
+			float s = dot(q, dir);
+			float d = dot(q, nrm) + 0.14 * sin(s * 2.1 + t * 0.25) + 0.05 * sin(s * 4.7 - t * 0.35);
+			float w = 0.2 + 0.07 * sin(s * 2.6 + t * 0.2);
+			float edge = 1.0 - smoothstep(w * 0.7, w, abs(d));
+			float x = d / w;
+			float fold = 0.5 + 0.5 * sin(x * 7.0 + s * 3.5 + t * 0.45);
+			float shade = 0.78 + 0.22 * fold;
+			float g = clamp(s * 0.85 + 0.45, 0.0, 1.0);
+			vec3 col = g < 0.5 ? mix(c1, c2, g * 2.0) : mix(c2, c3, (g - 0.5) * 2.0);
+			col = col * shade + vec3(0.22) * pow(fold, 8.0);
+			gl_FragColor = vec4(col * edge, edge);
+		}`;
+
+	function hexToRgb(hex: string): [number, number, number] {
+		const h = hex.trim().replace('#', '');
+		const n = parseInt(h.length === 3 ? [...h].map((c) => c + c).join('') : h, 16);
+		return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+	}
+
+	function start(canvas: HTMLCanvasElement) {
+		const gl = canvas.getContext('webgl', { premultipliedAlpha: true, antialias: true });
+		if (!gl) {
+			canvas.parentElement?.setAttribute('data-fallback', '');
+			return;
+		}
+
+		const compile = (type: number, src: string) => {
+			const s = gl.createShader(type)!;
+			gl.shaderSource(s, src);
+			gl.compileShader(s);
+			return s;
+		};
+		const prog = gl.createProgram()!;
+		gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
+		gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
+		gl.linkProgram(prog);
+		if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+			canvas.parentElement?.setAttribute('data-fallback', '');
+			return;
+		}
+		gl.useProgram(prog);
+
+		const buf = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+		const loc = gl.getAttribLocation(prog, 'p');
+		gl.enableVertexAttribArray(loc);
+		gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+		const css = getComputedStyle(document.documentElement);
+		(['c1', 'c2', 'c3'] as const).forEach((name, i) => {
+			gl.uniform3fv(
+				gl.getUniformLocation(prog, name),
+				hexToRgb(css.getPropertyValue(`--brand-${i + 1}`)),
+			);
+		});
+		const uRes = gl.getUniformLocation(prog, 'r');
+		const uTime = gl.getUniformLocation(prog, 't');
+
+		const resize = () => {
+			const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+			canvas.width = Math.round(canvas.clientWidth * dpr);
+			canvas.height = Math.round(canvas.clientHeight * dpr);
+			gl.viewport(0, 0, canvas.width, canvas.height);
+			gl.uniform2f(uRes, canvas.width, canvas.height);
+		};
+		const draw = (seconds: number) => {
+			gl.uniform1f(uTime, seconds);
+			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+		};
+
+		resize();
+		new ResizeObserver(() => {
+			resize();
+			if (reduce.matches) draw(0);
+		}).observe(canvas);
+
+		// Reduced motion: one still frame, no loop.
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+		if (reduce.matches) {
+			draw(0);
+			return;
+		}
+
+		let raf = 0;
+		let visible = true;
+		const loop = (ms: number) => {
+			draw(ms / 1000);
+			raf = visible ? requestAnimationFrame(loop) : 0;
+		};
+		new IntersectionObserver(([entry]) => {
+			visible = entry.isIntersecting;
+			if (visible && !raf) raf = requestAnimationFrame(loop);
+		}).observe(canvas);
+		raf = requestAnimationFrame(loop);
+	}
+
+	document.querySelectorAll<HTMLCanvasElement>('[data-ribbon]').forEach(start);
+</script>

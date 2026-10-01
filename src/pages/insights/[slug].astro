@@ -1,0 +1,63 @@
+---
+import { getEntry, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import DemoCta from '../../components/sections/DemoCta.astro';
+import Container from '../../components/ui/Container.astro';
+import Todo from '../../components/ui/Todo.astro';
+import { getInsights } from '../../lib/content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+	const insights = await getInsights();
+	return insights.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+interface Props {
+	post: CollectionEntry<'insights'>;
+}
+
+const { post } = Astro.props;
+const { title, summary, date, author, linkedin, draft } = post.data;
+const product = post.data.product ? await getEntry(post.data.product) : undefined;
+const { Content } = await render(post);
+const fmt = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<Layout title={title} description={summary}>
+	<article class="pt-14 sm:pt-20">
+		<Container size="narrow" class="grid gap-6">
+			<a href="/insights" class="text-small text-muted hover:text-ink">
+				Insights
+			</a>
+			<h1>{title}</h1>
+			<p class="flex flex-wrap gap-x-4 gap-y-1 text-small text-muted">
+				<span>{author}</span>
+				<time datetime={date.toISOString()}>{fmt.format(date)}</time>
+				{product && (
+					<a href={`/products/${product.id}`} class="font-medium text-brand">
+						{product.data.name}
+					</a>
+				)}
+			</p>
+			{draft && (
+				<Todo>
+					Draft: not published. Check the text against the LinkedIn original before setting draft:
+					false.
+				</Todo>
+			)}
+			<div class="prose">
+				<Content />
+			</div>
+			{linkedin && (
+				<p class="border-t border-line pt-6 text-small text-muted">
+					Also on{' '}
+					<a href={linkedin} class="text-brand" rel="noopener">
+						LinkedIn
+					</a>
+					.
+				</p>
+			)}
+		</Container>
+	</article>
+	<DemoCta product={product?.id} productName={product?.data.name} />
+</Layout>

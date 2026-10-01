@@ -1,11 +1,134 @@
 ---
-import Welcome from '../components/Welcome.astro';
+import { Icon } from 'astro-icon/components';
+import DemoCta from '../components/sections/DemoCta.astro';
+import HeroRibbon from '../components/sections/HeroRibbon.astro';
+import InsightList from '../components/sections/InsightList.astro';
+import ProductBento from '../components/sections/ProductBento.astro';
+import Button from '../components/ui/Button.astro';
+import Container from '../components/ui/Container.astro';
+import Todo from '../components/ui/Todo.astro';
+import { nav } from '../config/site';
+import { getInsights, getProductNames, getProducts } from '../lib/content';
 import Layout from '../layouts/Layout.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const products = await getProducts();
+const insights = (await getInsights()).slice(0, 3);
+const productNames = await getProductNames();
+
+// Stripe's "dedicated experts" pattern, carrying only claims we can stand behind (site-plan claims policy).
+const reasons = [
+	{
+		icon: 'lucide:landmark',
+		title: 'Built by people who know banking.',
+		body: 'Our team writes about the problems these products solve, from RM productivity to collateral governance.',
+		link: { label: 'Read our insights', href: '/insights' },
+	},
+	{
+		icon: 'lucide:zap',
+		title: 'Fast to deploy.',
+		body: 'AI-native engineering: we have taken an enterprise platform from concept to production in 22 days.',
+		link: { label: 'How we build', href: '/about' },
+	},
+	{
+		icon: 'lucide:plug',
+		title: 'Works with what you have.',
+		body: 'Designed to sit alongside your LOS, LMS, CBS and CRM, not replace them.',
+		link: { label: 'Talk to us', href: nav.cta.href },
+	},
+];
 ---
 
 <Layout>
-	<Welcome />
+	<!-- Hero: Stripe-style two-tone statement, one brand moment (the ribbon) -->
+	<section aria-labelledby="hero" class="relative isolate overflow-hidden">
+		<HeroRibbon />
+		<Container class="grid gap-8 pt-24 pb-20 sm:pt-32 sm:pb-28">
+			<h1 id="hero" class="max-w-3xl text-h1 font-medium">
+				<span class="text-ink">See every deal, valuation and workflow move.</span>{' '}
+				<span class="text-muted">
+					ElevateRM, <span class="whitespace-nowrap">V-Track</span> and NotifAI show banks and NBFCs
+					what is moving, what is stuck and what needs a decision.
+				</span>
+			</h1>
+			<div class="flex flex-wrap gap-3">
+				<Button href={nav.cta.href}>
+					{nav.cta.label}
+					<Icon name="lucide:chevron-right" class="size-4" aria-hidden="true" />
+				</Button>
+				<Button href="#products" variant="secondary">
+					See the products
+				</Button>
+			</div>
+		</Container>
+	</section>
+
+	<section
+		id="products"
+		aria-labelledby="products-title"
+		class="scroll-mt-16 border-t border-line py-20 sm:py-28"
+	>
+		<Container class="grid gap-12">
+			<h2 id="products-title" class="max-w-3xl font-medium">
+				<span class="text-ink">Three products, one lending lifecycle.</span>{' '}
+				<span class="text-muted">
+					From the relationship manager's first conversation to collateral monitoring and the
+					operations behind them. Use one, or all three together.
+				</span>
+			</h2>
+			<ProductBento products={products} />
+		</Container>
+	</section>
+
+	<section aria-labelledby="why" class="border-t border-line py-20 sm:py-28">
+		<Container class="grid gap-12">
+			<h2 id="why" class="max-w-3xl font-medium">
+				<span class="text-ink">Why FractalHive.</span>{' '}
+				<span class="text-muted">A focused team building for banking, and nothing else.</span>
+			</h2>
+			<ul class="grid gap-10 md:grid-cols-3">
+				{reasons.map((r) => (
+					<li class="grid content-start gap-3">
+						<span class="grid size-9 place-items-center rounded-lg border border-line bg-panel text-brand">
+							<Icon name={r.icon} class="size-4.5" aria-hidden="true" />
+						</span>
+						<p>
+							<strong class="font-medium">{r.title}</strong>{' '}
+							<span class="text-muted">{r.body}</span>
+						</p>
+						<a
+							href={r.link.href}
+							class="inline-flex items-center gap-1 text-small font-medium text-brand"
+						>
+							{r.link.label}
+							<Icon name="lucide:chevron-right" class="size-3.5" aria-hidden="true" />
+						</a>
+					</li>
+				))}
+			</ul>
+			<Todo>
+				Confirm "works with your LOS, LMS, CBS and CRM" is true for all three products before
+				launch.
+			</Todo>
+		</Container>
+	</section>
+
+	{insights.length > 0 && (
+		<section aria-labelledby="insights" class="border-t border-line py-20 sm:py-28">
+			<Container class="grid gap-12">
+				<div class="flex flex-wrap items-end justify-between gap-4">
+					<h2 id="insights" class="max-w-3xl font-medium">
+						<span class="text-ink">From the team.</span>{' '}
+						<span class="text-muted">How we think about the problems our products solve.</span>
+					</h2>
+					<a href="/insights" class="inline-flex items-center gap-1 font-medium text-brand">
+						All insights
+						<Icon name="lucide:chevron-right" class="size-4" aria-hidden="true" />
+					</a>
+				</div>
+				<InsightList insights={insights} productNames={productNames} />
+			</Container>
+		</section>
+	)}
+
+	<DemoCta />
 </Layout>

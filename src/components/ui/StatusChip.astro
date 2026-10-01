@@ -1,0 +1,31 @@
+---
+import type { State } from '../../lib/state';
+import StateMarker from './StateMarker.astro';
+
+interface Props {
+	state: State;
+	class?: string;
+}
+
+const { state, class: className } = Astro.props;
+
+const colors = {
+	idle: 'text-state-idle bg-state-idle/10',
+	active: 'text-state-active bg-state-active/10',
+	flowing: 'text-state-flowing bg-state-flowing/10',
+	success: 'text-state-success bg-state-success/10',
+	warning: 'text-state-warning bg-state-warning/10',
+	error: 'text-state-error bg-state-error/10',
+} satisfies Record<State, string>;
+---
+
+<span
+	class:list={[
+		'inline-flex items-center gap-1.5 rounded-full py-0.5 pr-2.5 pl-1.5 text-label font-medium',
+		colors[state],
+		className,
+	]}
+>
+	<StateMarker state={state} />
+	<slot />
+</span>

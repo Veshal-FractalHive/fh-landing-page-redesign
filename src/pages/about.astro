@@ -1,0 +1,81 @@
+---
+import DemoCta from '../components/sections/DemoCta.astro';
+import Container from '../components/ui/Container.astro';
+import Todo from '../components/ui/Todo.astro';
+import Layout from '../layouts/Layout.astro';
+
+// One set of values, merged from the three on the current site. TODO: agree the final four with leadership.
+const values = [
+	{
+		title: 'Simplicity over extravagance',
+		body: 'We remove clutter. Every feature and every screen has to earn its place.',
+	},
+	{
+		title: 'Honesty over profitability',
+		body: 'Long-term trust matters more than a short-term win. We say what our products do today.',
+	},
+	{
+		title: 'Ethical AI',
+		body: 'AI that supports people and decisions, with clear controls and an audit trail.',
+	},
+	{
+		title: 'Built with the people who use it',
+		body: 'We design with relationship managers, credit teams and operations, not around them.',
+	},
+];
+---
+
+<Layout title="About" description="Who we are, what we believe and how we build banking software.">
+	<Container size="narrow" class="grid gap-6 pt-14 sm:pt-20">
+		<h1>We build software for the people who run banks day to day</h1>
+		<p class="text-lead text-muted">
+			FractalHive was founded by technologists, AI researchers and banking domain experts in
+			Bengaluru. We saw relationship managers, credit teams and operations staff spending their days
+			on coordination their systems should handle, and set out to build tools that remove that
+			friction.
+		</p>
+		<Todo>
+			Founders to review and rewrite the story in their own words (the current site's version says
+			"across industries").
+		</Todo>
+	</Container>
+
+	<section aria-labelledby="values" class="py-16">
+		<Container class="grid gap-8">
+			<h2 id="values">What we believe</h2>
+			<ul class="grid gap-8 sm:grid-cols-2">
+				{values.map((v) => (
+					<li class="grid content-start gap-2 border-t-2 border-line pt-4">
+						<h3>{v.title}</h3>
+						<p class="text-muted">{v.body}</p>
+					</li>
+				))}
+			</ul>
+		</Container>
+	</section>
+
+	<section aria-labelledby="team" class="py-16">
+		<Container class="grid gap-6">
+			<h2 id="team">The team</h2>
+			<Todo>Founders and team: names, roles, short backgrounds, photos and LinkedIn links.</Todo>
+		</Container>
+	</section>
+
+	<section aria-labelledby="how-we-build" class="py-16">
+		<Container size="narrow" class="grid gap-4">
+			<h2 id="how-we-build">How we build</h2>
+			<p class="text-muted">
+				We use AI-assisted engineering with our own development pipeline. For one client, that meant
+				taking an operations platform from concept to production, including design, testing and user
+				acceptance, in 22 days.
+			</p>
+			<p>
+				<a href="/careers" class="font-medium text-brand">
+					Work with us
+				</a>
+			</p>
+		</Container>
+	</section>
+
+	<DemoCta />
+</Layout>

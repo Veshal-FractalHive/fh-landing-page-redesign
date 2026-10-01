@@ -1,0 +1,37 @@
+---
+import { Icon } from 'astro-icon/components';
+import { nav } from '../../config/site';
+import Button from '../ui/Button.astro';
+import Container from '../ui/Container.astro';
+
+interface Props {
+	/** Product id to pre-select on the demo form. */
+	product?: string;
+	/** Product name, for the product-specific heading. */
+	productName?: string;
+}
+
+const { product, productName } = Astro.props;
+const href = product ? `${nav.cta.href}?product=${product}` : nav.cta.href;
+const heading = productName
+	? `See ${productName} on your own cases.`
+	: 'See it working on your own cases.';
+---
+
+<section aria-labelledby="demo-cta" class="py-16 sm:py-24">
+	<Container>
+		<div class="grid gap-6 rounded-2xl bg-navy px-6 py-12 sm:px-12 md:grid-cols-[1fr_auto] md:items-center">
+			<h2 id="demo-cta" class="max-w-2xl font-medium">
+				<span class="text-surface">{heading}</span>{' '}
+				<span class="text-surface/70">
+					A short walkthrough with our team. We're also taking on a few banks and NBFCs as early
+					design partners.
+				</span>
+			</h2>
+			<Button href={href} variant="inverse" class="justify-self-start">
+				{nav.cta.label}
+				<Icon name="lucide:chevron-right" class="size-4" aria-hidden="true" />
+			</Button>
+		</div>
+	</Container>
+</section>

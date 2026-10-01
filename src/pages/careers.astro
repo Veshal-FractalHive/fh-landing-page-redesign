@@ -1,0 +1,60 @@
+---
+import { getCollection } from 'astro:content';
+import Button from '../components/ui/Button.astro';
+import Container from '../components/ui/Container.astro';
+import { site } from '../config/site';
+import Layout from '../layouts/Layout.astro';
+
+const roles = (await getCollection('roles', ({ data }) => data.open)).sort((a, b) =>
+	a.data.team.localeCompare(b.data.team),
+);
+const applyHref = (title: string) =>
+	`mailto:${site.careersEmail}?subject=${encodeURIComponent(`Application: ${title}`)}`;
+---
+
+<Layout
+	title="Careers"
+	description="Join the team building software for relationship managers, credit teams and banking operations."
+>
+	<Container class="grid gap-10 pt-14 sm:pt-20">
+		<div class="grid max-w-3xl gap-4">
+			<h1>Build software that banks run on</h1>
+			<p class="text-lead text-muted">
+				We're a small team in Bengaluru and Mumbai building ElevateRM, V-Track and NotifAI. Every
+				role here has a direct hand in the product.
+			</p>
+		</div>
+
+		<ul class="grid gap-4">
+			{roles.map((role) => (
+				<li class="grid gap-4 rounded-xl border border-line bg-panel p-6">
+					<div class="flex flex-wrap items-start justify-between gap-4">
+						<div class="grid gap-1">
+							<h2 class="text-h3">{role.data.title}</h2>
+							<p class="text-small text-muted">
+								{role.data.team} · {role.data.location} · {role.data.type} · {role.data.experience}
+							</p>
+						</div>
+						<Button href={applyHref(role.data.title)} variant="secondary">
+							Apply
+						</Button>
+					</div>
+					<p class="max-w-prose">{role.data.summary}</p>
+					<ul class="grid list-disc gap-1 pl-5 text-small text-muted">
+						{role.data.requirements.map((r) => (
+							<li>{r}</li>
+						))}
+					</ul>
+				</li>
+			))}
+		</ul>
+
+		<p class="text-muted">
+			Don't see your role? Write to{' '}
+			<a href={`mailto:${site.careersEmail}`} class="text-brand">
+				{site.careersEmail}
+			</a>{' '}
+			and tell us what you'd like to work on.
+		</p>
+	</Container>
+</Layout>

@@ -1,0 +1,83 @@
+---
+/**
+ * The shape for each state, so state never relies on colour alone (fractalhive-design skill):
+ * idle hollow ring, active filled dot with halo, flowing spinning split ring, success check,
+ * warning triangle, error diamond. Colour comes from the parent via currentColor.
+ */
+import type { State } from '../../lib/state';
+
+interface Props {
+	state: State;
+	class?: string;
+}
+
+const { state, class: className } = Astro.props;
+---
+
+<span class:list={['marker', className]} data-state={state} aria-hidden="true"></span>
+
+<style>
+	.marker {
+		position: relative;
+		display: inline-grid;
+		place-items: center;
+		width: 1rem;
+		height: 1rem;
+		flex: none;
+	}
+	.marker::before {
+		content: '';
+		box-sizing: border-box;
+		width: 0.75rem;
+		height: 0.75rem;
+		border-radius: 50%;
+		border: 1.75px solid currentColor;
+	}
+	.marker[data-state='active']::before {
+		background: currentColor;
+		box-shadow: 0 0 0 3px color-mix(in oklab, currentColor 20%, transparent);
+	}
+	.marker[data-state='flowing']::before {
+		border-color: currentColor transparent;
+		animation: marker-spin 900ms linear infinite;
+	}
+	.marker[data-state='success']::before {
+		background: currentColor;
+		border: 0;
+	}
+	.marker[data-state='success']::after {
+		content: '';
+		position: absolute;
+		width: 0.3rem;
+		height: 0.5rem;
+		border: solid var(--surface);
+		border-width: 0 1.75px 1.75px 0;
+		transform: translateY(-1px) rotate(45deg);
+	}
+	.marker[data-state='warning']::before {
+		border: 0;
+		border-radius: 0;
+		width: 0.875rem;
+		height: 0.8rem;
+		background: currentColor;
+		clip-path: polygon(50% 0, 100% 100%, 0 100%);
+	}
+	.marker[data-state='error']::before {
+		border: 0;
+		border-radius: 2px;
+		width: 0.625rem;
+		height: 0.625rem;
+		background: currentColor;
+		transform: rotate(45deg);
+	}
+	@keyframes marker-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.marker[data-state='flowing']::before {
+			animation: none;
+		}
+	}
+</style>

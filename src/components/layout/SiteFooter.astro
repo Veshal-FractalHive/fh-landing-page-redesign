@@ -1,0 +1,62 @@
+---
+import { nav, site } from '../../config/site';
+import Container from '../ui/Container.astro';
+import Logo from './Logo.astro';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-24 border-t border-line">
+	<Container class="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
+		<div class="grid content-start gap-3">
+			<Logo />
+			<p class="text-small text-muted">{site.location}</p>
+		</div>
+
+		<nav aria-label="Products" class="grid content-start gap-2">
+			<h2 class="text-label font-medium text-muted">Products</h2>
+			{nav.products.map((item) => (
+				<a href={item.href} class="text-small text-ink hover:text-brand">
+					{item.label}
+				</a>
+			))}
+		</nav>
+
+		<nav aria-label="Company" class="grid content-start gap-2">
+			<h2 class="text-label font-medium text-muted">Company</h2>
+			{nav.company.map((item) => (
+				<a href={item.href} class="text-small text-ink hover:text-brand">
+					{item.label}
+				</a>
+			))}
+			<a href={nav.cta.href} class="text-small text-ink hover:text-brand">
+				{nav.cta.label}
+			</a>
+		</nav>
+
+		<div class="grid content-start gap-2 text-small">
+			<h2 class="text-label font-medium text-muted">Contact</h2>
+			<a href={`mailto:${site.email}`} class="text-ink hover:text-brand">
+				{site.email}
+			</a>
+			<a
+				href={`tel:${site.phone.replace(/\s/g, '')}`}
+				class="text-ink tabular-nums hover:text-brand"
+			>
+				{site.phone}
+			</a>
+			<a href={site.linkedin} class="text-ink hover:text-brand" rel="noopener">
+				LinkedIn
+			</a>
+		</div>
+	</Container>
+
+	<Container class="flex flex-wrap justify-between gap-4 border-t border-line py-6 text-label text-muted">
+		<p>
+			© {year} {site.legalName}
+		</p>
+		<a href="/privacy" class="hover:text-ink">
+			Privacy policy
+		</a>
+	</Container>
+</footer>

@@ -1,0 +1,15 @@
+---
+/** The only place the logo is drawn. Swap the file and site.name when the rebrand lands. */
+import { Image } from 'astro:assets';
+import logo from '../../assets/brand/logo.png';
+import { site } from '../../config/site';
+---
+
+<a
+	href="/"
+	class="inline-flex items-center gap-2 font-semibold text-ink"
+	aria-label={`${site.name} home`}
+>
+	<Image src={logo} alt="" width={28} height={28} loading="eager" />
+	<span class="text-body">{site.name}</span>
+</a>

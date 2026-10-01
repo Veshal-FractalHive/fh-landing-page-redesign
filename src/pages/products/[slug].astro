@@ -1,0 +1,101 @@
+---
+import { render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import ProductDiagram from '../../components/diagrams/ProductDiagram.astro';
+import DemoCta from '../../components/sections/DemoCta.astro';
+import InsightList from '../../components/sections/InsightList.astro';
+import Button from '../../components/ui/Button.astro';
+import Container from '../../components/ui/Container.astro';
+import Todo from '../../components/ui/Todo.astro';
+import { nav } from '../../config/site';
+import { getInsights, getProductNames, getProducts } from '../../lib/content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+	const products = await getProducts();
+	return products.map((product) => ({ params: { slug: product.id }, props: { product } }));
+}
+
+interface Props {
+	product: CollectionEntry<'products'>;
+}
+
+const { product } = Astro.props;
+const { name, tagline, summary, audience, problem, capabilities, diagram } = product.data;
+const { Content } = await render(product);
+const related = (await getInsights()).filter((i) => i.data.product?.id === product.id);
+const productNames = await getProductNames();
+---
+
+<Layout title={name} description={summary}>
+	<section aria-labelledby="product-title" class="pt-14 pb-16 sm:pt-20">
+		<Container class="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+			<div class="grid gap-5">
+				<p class="text-small text-muted">{audience}</p>
+				<h1 id="product-title" class="text-display">
+					{name}
+				</h1>
+				<p class="text-h3 font-medium">{tagline}</p>
+				<div class="max-w-prose text-lead text-muted">
+					<Content />
+				</div>
+				<div class="flex flex-wrap gap-3">
+					<Button href={`${nav.cta.href}?product=${product.id}`}>{nav.cta.label}</Button>
+					<Button href="#how-it-works" variant="secondary">
+						How it works
+					</Button>
+				</div>
+			</div>
+			<ProductDiagram diagram={diagram} />
+		</Container>
+	</section>
+
+	<section aria-labelledby="problem" class="py-16">
+		<Container size="narrow" class="grid gap-4">
+			<h2 id="problem">The problem</h2>
+			<p class="text-lead text-muted">{problem}</p>
+		</Container>
+	</section>
+
+	<section id="how-it-works" aria-labelledby="how" class="scroll-mt-20 py-16">
+		<Container class="grid gap-6">
+			<h2 id="how">How it works</h2>
+			<Todo>
+				Interactive walkthrough of the real {name} workflow, with status names from the product
+				team. Needs screens or a recording.
+			</Todo>
+		</Container>
+	</section>
+
+	<section aria-labelledby="capabilities" class="py-16">
+		<Container class="grid gap-8">
+			<h2 id="capabilities">What {name} does</h2>
+			<ul class="grid gap-8 md:grid-cols-3">
+				{capabilities.map((c) => (
+					<li class="grid content-start gap-2 border-t-2 border-line pt-4">
+						<h3>{c.title}</h3>
+						<p class="text-small text-muted">{c.description}</p>
+					</li>
+				))}
+			</ul>
+		</Container>
+	</section>
+
+	<section aria-labelledby="stack" class="py-16">
+		<Container class="grid gap-4">
+			<h2 id="stack">Fits your stack</h2>
+			<Todo>List the systems {name} works alongside (LOS, LMS, CBS, CRM) once confirmed.</Todo>
+		</Container>
+	</section>
+
+	{related.length > 0 && (
+		<section aria-labelledby="related" class="py-16">
+			<Container class="grid gap-8">
+				<h2 id="related">Related reading</h2>
+				<InsightList insights={related} productNames={productNames} />
+			</Container>
+		</section>
+	)}
+
+	<DemoCta product={product.id} productName={name} />
+</Layout>

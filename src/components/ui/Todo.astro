@@ -1,0 +1,18 @@
+---
+/** Visible marker for content we're still waiting on. Remove each one as the real content arrives. */
+interface Props {
+	class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<p
+	class:list={[
+		'rounded-lg border border-dashed border-state-warning/60 bg-state-warning/5 px-3 py-2 text-small text-state-warning',
+		className,
+	]}
+>
+	<strong class="mr-1 font-medium">To do:</strong>
+	<slot />
+</p>

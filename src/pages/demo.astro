@@ -1,0 +1,127 @@
+---
+import Button from '../components/ui/Button.astro';
+import Container from '../components/ui/Container.astro';
+import Todo from '../components/ui/Todo.astro';
+import { site } from '../config/site';
+import { getProducts } from '../lib/content';
+import Layout from '../layouts/Layout.astro';
+
+const products = await getProducts();
+const field = 'grid gap-1.5';
+const label = 'text-small font-medium';
+const input =
+	'rounded-lg border border-line bg-panel px-3 py-2.5 text-body text-ink placeholder:text-muted focus-visible:border-brand focus-visible:outline-2 focus-visible:outline-brand/30';
+---
+
+<Layout
+	title="Request a demo"
+	description="See ElevateRM, V-Track or NotifAI working on cases like yours."
+>
+	<Container class="grid gap-12 pt-14 sm:pt-20 lg:grid-cols-[1fr_22rem]">
+		<div class="grid content-start gap-8">
+			<div class="grid gap-4">
+				<h1>Request a demo</h1>
+				<p class="max-w-prose text-lead text-muted">
+					Tell us a little about your institution and what you'd like to see. We'll reply within one
+					working day to set up a time. If you'd like to go further, we're taking on a few banks and
+					NBFCs as early design partners; mention it in your message.
+				</p>
+				<Todo>
+					Confirm the reply time and demo format with sales. The form needs the Azure Function
+					(azure-deploy skill) before it sends.
+				</Todo>
+			</div>
+
+			<form method="post" action="/api/contact" class="grid max-w-2xl gap-5">
+				<div class="grid gap-5 sm:grid-cols-2">
+					<div class={field}>
+						<label for="name" class={label}>
+							Name
+						</label>
+						<input id="name" name="name" autocomplete="name" required class={input} />
+					</div>
+					<div class={field}>
+						<label for="email" class={label}>
+							Work email
+						</label>
+						<input
+							id="email"
+							name="email"
+							type="email"
+							autocomplete="email"
+							required
+							class={input}
+						/>
+					</div>
+					<div class={field}>
+						<label for="institution" class={label}>
+							Bank or institution
+						</label>
+						<input
+							id="institution"
+							name="institution"
+							autocomplete="organization"
+							required
+							class={input}
+						/>
+					</div>
+					<div class={field}>
+						<label for="role" class={label}>
+							Your role
+						</label>
+						<input id="role" name="role" autocomplete="organization-title" class={input} />
+					</div>
+				</div>
+				<div class={field}>
+					<label for="product" class={label}>
+						Which product?
+					</label>
+					<select id="product" name="product" class={input}>
+						{products.map((p) => (
+							<option value={p.id}>{p.data.name}</option>
+						))}
+						<option value="not-sure" selected>
+							Not sure yet
+						</option>
+					</select>
+				</div>
+				<div class={field}>
+					<label for="message" class={label}>
+						Anything we should know? <span class="font-regular text-muted">(optional)</span>
+					</label>
+					<textarea id="message" name="message" rows="4" class={input}></textarea>
+				</div>
+				<!-- Honeypot: hidden from people, filled by bots; the Function rejects submissions that fill it. -->
+				<div class="hidden" aria-hidden="true">
+					<label for="website">Website</label>
+					<input id="website" name="website" tabindex="-1" autocomplete="off" />
+				</div>
+				<Button type="submit" class="justify-self-start">
+					Request a demo
+				</Button>
+			</form>
+		</div>
+
+		<aside class="grid content-start gap-4 rounded-xl border border-line bg-panel p-6 text-small">
+			<h2 class="text-h3">Prefer to talk directly?</h2>
+			<a href={`mailto:${site.email}`} class="text-brand">
+				{site.email}
+			</a>
+			<a href={`tel:${site.phone.replace(/\s/g, '')}`} class="tabular-nums">
+				{site.phone}
+			</a>
+			<address class="text-muted not-italic">{site.address}</address>
+			<a href={site.mapUrl} class="text-brand" rel="noopener">
+				Get directions
+			</a>
+		</aside>
+	</Container>
+</Layout>
+
+<script>
+	// Pre-select the product when arriving from a product page (?product=v-track).
+	const product = new URLSearchParams(location.search).get('product');
+	const select = document.querySelector<HTMLSelectElement>('#product');
+	if (product && select?.querySelector(`option[value="${CSS.escape(product)}"]`))
+		select.value = product;
+</script>
