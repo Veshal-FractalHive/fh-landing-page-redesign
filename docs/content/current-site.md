@@ -1,5 +1,7 @@
 # Current site content inventory
 
+> **Note (2026-10-01):** the product formerly called NotifAI is now **Nico**; references below use the new name.
+
 Snapshot of https://fractalhive.com, crawled 2026-10-01. Copy is verbatim so it can be reused or rewritten.
 Six pages exist: Home, About, Insights, Careers, Contact, Privacy. There is no sitemap and no product pages
 (the footer links "Products: Explore our products", but nothing exists behind it).
@@ -24,7 +26,7 @@ Office map https://maps.app.goo.gl/wZ5DbBQFunt32nd68 (street address isn't writt
 | --------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
 | ElevateRM | One workspace. Every action. Complete control. | Cockpit for relationship managers—bringing deals, pricing, leads, and customer actions into one unified workspace. | Deal Orchestration · Commercial Intelligence · RM Cockpit & Relationship View    |
 | V-Track   | Always current. Always correct.                | Centralised valuation tracking ensuring accuracy and auditability, with an enterprise-wide unified view.           | Single Source of Truth · Revaluation Discipline & Monitoring · Audit & Control   |
-| NotifAI   | Agentic Conductor for Enterprise Operations    | Bring coherence to distributed workflows by leveraging context from unstructured data into seamless execution.     | Risk & Control Framework · Workflow Orchestration · Audit & Lifecycle Visibility |
+| Nico      | Agentic Conductor for Enterprise Operations    | Bring coherence to distributed workflows by leveraging context from unstructured data into seamless execution.     | Risk & Control Framework · Workflow Orchestration · Audit & Lifecycle Visibility |
 
 Each product has one AI-generated "product visual" image.
 

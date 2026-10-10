@@ -8,7 +8,7 @@ export const site = {
 	// Limited. Confirm which entity the footer should show.
 	legalName: 'FractalHive Inc.',
 	description:
-		'ElevateRM, V-Track and NotifAI: AI platforms for relationship managers, collateral valuation and banking operations.',
+		'ElevateRM, V-Track and Nico: AI platforms for relationship managers, collateral valuation and banking operations.',
 	url: 'https://fractalhive.com',
 	location: 'Bengaluru, India',
 	// From the privacy policy.
@@ -26,7 +26,7 @@ export const nav = {
 	products: [
 		{ label: 'ElevateRM', href: '/products/elevaterm' },
 		{ label: 'V-Track', href: '/products/v-track' },
-		{ label: 'NotifAI', href: '/products/notifai' },
+		{ label: 'Nico', href: '/products/nico' },
 	],
 	company: [
 		{ label: 'Insights', href: '/insights' },

@@ -14,9 +14,7 @@ interface Props {
 }
 
 const { title, description = site.description, underHeader = false } = Astro.props;
-const fullTitle = title
-	? `${title} | ${site.name}`
-	: `${site.name}: ElevateRM, V-Track and NotifAI`;
+const fullTitle = title ? `${title} | ${site.name}` : `${site.name}: ElevateRM, V-Track and Nico`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 

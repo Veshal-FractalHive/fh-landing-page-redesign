@@ -1,0 +1,137 @@
+---
+/**
+ * Stripe-style story carousel for articles: tall 4:5 image cards, product, title, "Read the article".
+ * The track scrolls sideways with snap points inside the content column (3 cards on desktop, 2 on
+ * tablet, 1 with a peek on phones); prev/next
+ * buttons step one card at a time and disable at the ends. Works without JS (native horizontal scroll).
+ */
+import type { CollectionEntry } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+import { site } from '../../config/site';
+import InsightCover from './InsightCover.astro';
+
+interface Props {
+	insights: CollectionEntry<'insights'>[];
+	productNames: Record<string, string>;
+	/** Heading id for aria-labelledby on the region. */
+	labelledBy: string;
+}
+
+const { insights, productNames, labelledBy } = Astro.props;
+const arrow =
+	'grid size-10 place-items-center rounded-sm border border-line bg-panel text-ink transition-colors duration-(--duration-fast) hover:border-ink/40 disabled:cursor-default disabled:opacity-40 disabled:hover:border-line focus-visible:outline-2 focus-visible:outline-brand';
+---
+
+<div data-carousel class="grid gap-12">
+	<div class="flex flex-wrap items-end justify-between gap-6">
+		<slot name="heading" />
+		<div class="flex items-center gap-5">
+			<slot name="actions" />
+			<div class="flex gap-2" data-carousel-controls hidden>
+				<button type="button" class={arrow} data-prev aria-label="Previous articles">
+					<Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
+				</button>
+				<button type="button" class={arrow} data-next aria-label="Next articles">
+					<Icon name="lucide:arrow-right" class="size-4" aria-hidden="true" />
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<ul
+		data-track
+		role="region"
+		aria-labelledby={labelledBy}
+		tabindex="0"
+		class="track flex snap-x snap-mandatory gap-8 overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+	>
+		{insights.map((post, i) => {
+			const brand = post.data.product ? productNames[post.data.product.id] : site.name;
+			return (
+				<li class="flex w-[85%] flex-none snap-start sm:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)]">
+					<a
+						href={`/insights/${post.id}`}
+						class="group @container relative isolate flex w-full flex-col gap-4"
+					>
+						<InsightCover
+							image={post.data.imagePortrait ?? post.data.image}
+							portrait
+							sizes="(min-width: 1024px) 22rem, (min-width: 640px) 45vw, 85vw"
+							figure={post.data.cover?.figure}
+							caption={post.data.cover?.caption}
+							brand={brand}
+							tone={i}
+							bleed
+						/>
+						<div class="flex flex-1 flex-col gap-3 px-1">
+							<p class="text-label font-medium text-brand">{brand}</p>
+							<p class="text-lead font-medium text-pretty text-ink">
+								{post.data.title}
+								{post.data.draft && <span class="ml-2 text-label text-state-warning">Draft</span>}
+							</p>
+							<span class="mt-auto inline-flex items-center gap-1 text-small font-medium text-brand group-hover:underline group-hover:underline-offset-4">
+								Read the article
+								<Icon
+									name="lucide:chevron-right"
+									class="size-4 transition-transform duration-(--duration-fast) ease-out group-hover:translate-x-1 group-focus-visible:translate-x-1"
+									aria-hidden="true"
+								/>
+							</span>
+						</div>
+					</a>
+				</li>
+			);
+		})}
+	</ul>
+</div>
+
+<style>
+	/*
+	 * The track stays inside the content column (it no longer bleeds past the layout guide). Its edges are
+	 * pushed out 0.75rem and padded back by the same amount: cards line up exactly with the heading, and the
+	 * hover expand (about 8px each side) has room without being clipped.
+	 */
+	.track {
+		margin: -1rem;
+		padding: 1rem;
+		scroll-padding-inline: 1rem;
+		scrollbar-width: none;
+		scroll-behavior: smooth;
+	}
+	.track::-webkit-scrollbar {
+		display: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.track {
+			scroll-behavior: auto;
+		}
+	}
+</style>
+
+<script>
+	document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((root) => {
+		const track = root.querySelector<HTMLElement>('[data-track]');
+		const controls = root.querySelector<HTMLElement>('[data-carousel-controls]');
+		const prev = root.querySelector<HTMLButtonElement>('[data-prev]');
+		const next = root.querySelector<HTMLButtonElement>('[data-next]');
+		if (!track || !controls || !prev || !next) return;
+
+		const step = () => {
+			const card = track.querySelector<HTMLElement>('li');
+			const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+			return (card?.offsetWidth ?? 300) + gap;
+		};
+		const update = () => {
+			const max = track.scrollWidth - track.clientWidth;
+			controls.hidden = max <= 2;
+			prev.disabled = track.scrollLeft <= 2;
+			next.disabled = track.scrollLeft >= max - 2;
+		};
+
+		prev.addEventListener('click', () => track.scrollBy({ left: -step() }));
+		next.addEventListener('click', () => track.scrollBy({ left: step() }));
+		track.addEventListener('scroll', update, { passive: true });
+		new ResizeObserver(update).observe(track);
+		update();
+	});
+</script>

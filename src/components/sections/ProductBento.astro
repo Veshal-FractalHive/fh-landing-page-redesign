@@ -1,57 +1,259 @@
 ---
 /**
- * Stripe-style product bento: each card has its name and promise top-left, a link button top-right, and
- * the product's UI (its state diagram in an app window) bleeding off the bottom-right over a brand wash.
- * Layout: first product wide (2/3), second beside it, third full width.
+ * Product bento grid (desktop): first two products side by side on top, the third full width below.
+ * The active tile (pointer or keyboard focus) grows by resizing the grid tracks, so tiles never move
+ * position; it fades in its full view (text column + live workflow window) while the others show a
+ * compact summary. The last tile pointed at stays open, so crossing the gaps never flickers.
+ *
+ * Smoothness: each full view is laid out at its final expanded size (container query units + the grid's
+ * fixed height), so text never reflows mid-animation; it only fades. Exit fades fast, entry is slightly
+ * delayed (asymmetric timing). Below lg the tiles stack, each fully open, no interaction needed.
  */
 import type { CollectionEntry } from 'astro:content';
 import { Icon } from 'astro-icon/components';
 import ProductDiagram from '../diagrams/ProductDiagram.astro';
+import { diagrams, focusOf } from '../../lib/diagrams';
+import StateMarker from '../ui/StateMarker.astro';
 
 interface Props {
 	products: CollectionEntry<'products'>[];
 }
 
 const { products } = Astro.props;
-const span = ['lg:col-span-2', 'lg:col-span-1', 'lg:col-span-3'];
+
+/** What each small tile shows before its workflow starts playing (and without JavaScript). */
+const initialFocus = (diagram: CollectionEntry<'products'>['data']['diagram']) => {
+	const d = diagrams[diagram];
+	return focusOf(d.frames[d.still], d.steps);
+};
 ---
 
-<ul class="grid gap-4 lg:grid-cols-3">
-	{products.map((p, i) => (
+<ul data-bento data-active="0" class="bento @container grid gap-4">
+	{products.slice(0, 3).map((p, i) => (
 		<li
 			id={p.id}
-			class:list={[
-				'group relative isolate grid scroll-mt-24 content-start gap-8 overflow-hidden rounded-2xl border border-line bg-panel pt-6 pl-6 sm:pt-8 sm:pl-8',
-				span[i],
-			]}
+			data-card={i}
+			class="card group relative isolate scroll-mt-24 overflow-hidden rounded-2xl border border-line bg-panel"
 		>
 			<div class="absolute inset-0 -z-10 bg-brand-wash opacity-70" aria-hidden="true"></div>
-			<div class="flex items-start justify-between gap-4 pr-6 sm:pr-8">
-				<h3 class="max-w-md text-h3 font-medium">
-					<a href={`/products/${p.id}`} class="after:absolute after:inset-0">
-						<span class="text-ink">{p.data.name}.</span>{' '}
-						<span class="text-muted">{p.data.tagline}</span>
-					</a>
-				</h3>
-				<span
-					class="grid size-8 flex-none place-items-center rounded-lg bg-brand/10 text-brand transition-transform duration-(--duration-fast) ease-out group-hover:translate-x-0.5"
-					aria-hidden="true"
-				>
-					<Icon name="lucide:arrow-up-right" class="size-4" />
-				</span>
+
+			<!--
+				Small-tile footer (desktop): a live status line mirroring the step in this product's workflow
+				that needs attention right now, then Explore. The heading above never changes.
+			-->
+			{(() => {
+				const focus = initialFocus(p.data.diagram);
+				return (
+					<div
+						class="compact absolute right-8 bottom-8 left-8 hidden flex-col items-start gap-3 lg:flex"
+						aria-hidden="true"
+					>
+						<p
+							data-status
+							data-state={focus.state}
+							class="status flex max-w-full items-center gap-2 text-small"
+						>
+							<StateMarker state={focus.state} />
+							<span data-status-label class="min-w-0 shrink-0 truncate font-medium text-ink">
+								{focus.label}
+							</span>
+							<span data-status-note class="note min-w-0 truncate">
+								{focus.note}
+							</span>
+						</p>
+						<span class="inline-flex items-center gap-1 text-small font-medium text-brand">
+							Explore
+							<Icon name="lucide:arrow-right" class="size-4" />
+						</span>
+					</div>
+				);
+			})()}
+
+			<!--
+				Full view: fixed at the expanded size on desktop so nothing reflows. The heading is always
+				visible (it is the same element at every size, so it can't flicker); only the .detail parts
+				fade in when the tile is open.
+			-->
+			<div class="full grid gap-6 pt-6 pl-6 sm:pt-8 sm:pl-8 lg:absolute lg:top-0 lg:left-0 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+				<div class="grid content-start gap-5 pr-6 sm:pr-8 lg:pr-0 lg:pb-8">
+					<div class="flex items-start justify-between gap-4">
+						<h3 class="text-h3 font-medium">
+							<a href={`/products/${p.id}`} class="after:absolute after:inset-0">
+								<span class="text-ink">{p.data.name}.</span>{' '}
+								<span class="text-muted">{p.data.tagline}</span>
+							</a>
+						</h3>
+						<span
+							class="grid size-8 flex-none place-items-center rounded-sm bg-brand/10 text-brand lg:hidden"
+							aria-hidden="true"
+						>
+							<Icon name="lucide:arrow-up-right" class="size-4" />
+						</span>
+					</div>
+					<p class="detail text-small text-muted">
+						<span class="font-medium text-ink">{p.data.audience}.</span> {p.data.problem}
+					</p>
+					<ul class="detail flex flex-wrap gap-2" aria-label={`${p.data.name} capabilities`}>
+						{p.data.capabilities.map((c) => (
+							<li class="rounded-sm border border-line bg-panel/80 px-2.5 py-1 text-label font-medium text-ink">
+								{c.title}
+							</li>
+						))}
+					</ul>
+					<span class="detail hidden items-center gap-1 text-small font-medium text-brand lg:inline-flex">
+						Explore {p.data.name}
+						<Icon name="lucide:arrow-right" class="size-4" />
+					</span>
+				</div>
+				<div class="detail relative -mb-4 mr-6 self-end sm:mr-8 lg:mt-8">
+					<ProductDiagram
+						diagram={p.data.diagram}
+						windowTitle={p.data.name}
+						playWhenVisible="[data-card]"
+					/>
+				</div>
 			</div>
-			<p class="-mt-4 max-w-md pr-6 text-small text-muted">{p.data.audience}</p>
-			<ProductDiagram
-				diagram={p.data.diagram}
-				windowTitle={p.data.name}
-				class:list={[
-					'relative -mb-4 ml-auto w-full transition-transform duration-(--duration-base) ease-out group-hover:-translate-y-1.5',
-					// Wide cards bleed the window off the right edge (Stripe-style); the narrow card stays flush
-					// so status text is never cut off.
-					i !== 1 && 'sm:w-[min(36rem,calc(100%+2rem))] sm:translate-x-4',
-					i === 2 && 'lg:w-[min(44rem,70%)]',
-				]}
-			/>
 		</li>
 	))}
 </ul>
+
+<style>
+	/* Status line colours follow the focus step's state: marker in the state colour, note too when it
+	   needs attention; done and waiting notes stay muted. */
+	.status {
+		color: var(--muted);
+	}
+	.status[data-state='active'] {
+		color: var(--brand-1);
+	}
+	.status[data-state='flowing'] {
+		color: var(--flowing);
+	}
+	.status[data-state='warning'] {
+		color: var(--warning);
+	}
+	.status[data-state='error'] {
+		color: var(--error);
+	}
+	.status[data-state='success'] :global(.marker) {
+		color: var(--success);
+	}
+	.status[data-state='idle'] :global(.marker) {
+		color: var(--idle);
+	}
+	.status .note::before {
+		content: '· ';
+		color: var(--muted);
+	}
+
+	@media (min-width: 64rem) {
+		.bento {
+			--bento-h: 50rem;
+			--gap: 1rem;
+			height: var(--bento-h);
+			grid-template-columns: 2fr 1fr;
+			grid-template-rows: 2fr 1fr;
+			transition:
+				grid-template-columns var(--duration-expand) var(--ease-in-out),
+				grid-template-rows var(--duration-expand) var(--ease-in-out);
+		}
+		/* Tracks follow the active tile; tiles keep their positions. */
+		.bento[data-active='1'] {
+			grid-template-columns: 1fr 2fr;
+		}
+		.bento[data-active='2'] {
+			grid-template-columns: 1fr 1fr;
+			grid-template-rows: 1fr 2fr;
+		}
+
+		.card {
+			min-width: 0;
+			min-height: 0;
+		}
+		.card[data-card='0'] {
+			grid-area: 1 / 1;
+		}
+		.card[data-card='1'] {
+			grid-area: 1 / 2;
+		}
+		.card[data-card='2'] {
+			grid-area: 2 / 1 / 3 / 3;
+		}
+
+		/* Full views sized to the tile's expanded size, so they never reflow while tracks animate. */
+		.full {
+			height: calc((var(--bento-h) - var(--gap)) * 2 / 3);
+			width: calc((100cqw - var(--gap)) * 2 / 3);
+		}
+		.card[data-card='2'] .full {
+			width: 100cqw;
+			grid-template-columns: 22rem minmax(0, 40rem);
+			justify-content: space-between;
+		}
+
+		/*
+		 * No flicker: the heading never changes. Only the details (problem, capabilities, workflow window)
+		 * and the small-tile footer fade, opacity only (no movement), with the details arriving as the tile
+		 * opens and leaving quickly as it closes.
+		 */
+		.detail,
+		.compact {
+			transition: opacity 160ms var(--ease-out);
+		}
+		.bento:not([data-active='0']) .card[data-card='0'] .detail,
+		.bento:not([data-active='1']) .card[data-card='1'] .detail,
+		.bento:not([data-active='2']) .card[data-card='2'] .detail,
+		.bento[data-active='0'] .card[data-card='0'] .compact,
+		.bento[data-active='1'] .card[data-card='1'] .compact,
+		.bento[data-active='2'] .card[data-card='2'] .compact {
+			opacity: 0;
+			pointer-events: none;
+		}
+		.bento[data-active='0'] .card[data-card='0'] .detail,
+		.bento[data-active='1'] .card[data-card='1'] .detail,
+		.bento[data-active='2'] .card[data-card='2'] .detail {
+			transition: opacity 300ms var(--ease-out) 60ms;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.bento,
+		.compact,
+		.detail {
+			transition: none !important;
+		}
+	}
+</style>
+
+<script>
+	document.querySelectorAll<HTMLElement>('[data-bento]').forEach((bento) => {
+		const cards = [...bento.querySelectorAll<HTMLElement>('[data-card]')];
+		const activate = (card: HTMLElement) => {
+			const index = card.dataset.card ?? '0';
+			if (bento.dataset.active === index) return;
+			bento.dataset.active = index;
+			// Replay this product's workflow from the first step as it opens.
+			card.querySelector('[data-diagram]')?.dispatchEvent(new Event('diagram:restart'));
+		};
+		cards.forEach((card) => {
+			// Mirror the workflow's focus step into the small tile's status line.
+			const status = card.querySelector<HTMLElement>('[data-status]');
+			card.querySelector('[data-diagram]')?.addEventListener('diagram:frame', (e) => {
+				const { state, label, note } = (
+					e as CustomEvent<{ state: string; label: string; note: string }>
+				).detail;
+				if (!status) return;
+				status.dataset.state = state;
+				status.querySelector('.marker')?.setAttribute('data-state', state);
+				const l = status.querySelector('[data-status-label]');
+				const n = status.querySelector('[data-status-note]');
+				if (l) l.textContent = label;
+				if (n) n.textContent = note;
+			});
+			card.addEventListener('pointerenter', (e) => {
+				if (e.pointerType === 'mouse' || e.pointerType === 'pen') activate(card);
+			});
+			card.addEventListener('focusin', () => activate(card));
+		});
+	});
+</script>

@@ -9,7 +9,7 @@ Effective Date: August 7, 2026
 
 FractalHive Solutions Private Limited ("FractalHive," "we," "our," or "us") is committed to protecting the privacy, confidentiality, and security of our customers, partners, website visitors, and users of our products and services.
 
-This Privacy Policy describes how we collect, use, disclose, store, process, and safeguard information when you visit our website or use our software products and services, including but not limited to V-Track, NotifAI, ElevateRM, and any related applications, websites, APIs, and support services (collectively, the "Services").
+This Privacy Policy describes how we collect, use, disclose, store, process, and safeguard information when you visit our website or use our software products and services, including but not limited to V-Track, Nico, ElevateRM, and any related applications, websites, APIs, and support services (collectively, the "Services").
 
 By accessing or using our Services, you acknowledge that you have read and understood this Privacy Policy.
 

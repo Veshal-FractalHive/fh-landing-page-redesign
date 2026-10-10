@@ -1,5 +1,9 @@
 ---
+/** Article grid (Insights page, product pages): same generated covers as the home carousel. */
 import type { CollectionEntry } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+import { site } from '../../config/site';
+import InsightCover from './InsightCover.astro';
 
 interface Props {
 	insights: CollectionEntry<'insights'>[];
@@ -10,19 +14,32 @@ const { insights, productNames } = Astro.props;
 const fmt = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 ---
 
-<ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-	{insights.map((post) => (
-		<li class="rounded-xl border border-line bg-panel">
-			<a href={`/insights/${post.id}`} class="group grid h-full content-start gap-3 p-6">
-				<p class="flex flex-wrap items-center gap-x-3 text-label text-muted">
-					{post.data.product && (
-						<span class="font-medium text-brand">{productNames[post.data.product.id]}</span>
-					)}
-					<time datetime={post.data.date.toISOString()}>{fmt.format(post.data.date)}</time>
-					{post.data.draft && <span class="text-state-warning">Draft</span>}
-				</p>
-				<h3 class="group-hover:text-brand">{post.data.title}</h3>
-				<p class="text-small text-muted">{post.data.summary}</p>
+<ul class="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+	{insights.map((post, i) => (
+		<li>
+			<a href={`/insights/${post.id}`} class="group grid content-start gap-4">
+				<InsightCover
+					image={post.data.image}
+					figure={post.data.cover?.figure}
+					caption={post.data.cover?.caption}
+					brand={post.data.product ? productNames[post.data.product.id] : site.name}
+					tone={i}
+				/>
+				<div class="grid gap-2 px-1">
+					<p class="flex flex-wrap items-center gap-x-3 text-label text-muted">
+						{post.data.product && (
+							<span class="font-medium text-brand">{productNames[post.data.product.id]}</span>
+						)}
+						<time datetime={post.data.date.toISOString()}>{fmt.format(post.data.date)}</time>
+						{post.data.draft && <span class="text-state-warning">Draft</span>}
+					</p>
+					<h3 class="text-lead font-medium text-pretty">{post.data.title}</h3>
+					<p class="text-small text-muted">{post.data.summary}</p>
+					<span class="mt-1 inline-flex items-center gap-1 text-small font-medium text-brand group-hover:underline group-hover:underline-offset-4">
+						Read the article
+						<Icon name="lucide:chevron-right" class="size-4" aria-hidden="true" />
+					</span>
+				</div>
 			</a>
 		</li>
 	))}

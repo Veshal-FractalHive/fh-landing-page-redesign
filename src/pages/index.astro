@@ -2,7 +2,7 @@
 import { Icon } from 'astro-icon/components';
 import DemoCta from '../components/sections/DemoCta.astro';
 import HeroRibbon from '../components/sections/HeroRibbon.astro';
-import InsightList from '../components/sections/InsightList.astro';
+import InsightCarousel from '../components/sections/InsightCarousel.astro';
 import ProductBento from '../components/sections/ProductBento.astro';
 import Button from '../components/ui/Button.astro';
 import Container from '../components/ui/Container.astro';
@@ -12,7 +12,7 @@ import { getInsights, getProductNames, getProducts } from '../lib/content';
 import Layout from '../layouts/Layout.astro';
 
 const products = await getProducts();
-const insights = (await getInsights()).slice(0, 3);
+const insights = (await getInsights()).slice(0, 8);
 const productNames = await getProductNames();
 
 // Stripe's "dedicated experts" pattern, carrying only claims we can stand behind (site-plan claims policy).
@@ -46,7 +46,7 @@ const reasons = [
 			<h1 id="hero" class="max-w-3xl text-h1 font-medium">
 				<span class="text-ink">See every deal, valuation and workflow move.</span>{' '}
 				<span class="text-muted">
-					ElevateRM, <span class="whitespace-nowrap">V-Track</span> and NotifAI show banks and NBFCs
+					ElevateRM, <span class="whitespace-nowrap">V-Track</span> and Nico show banks and NBFCs
 					what is moving, what is stuck and what needs a decision.
 				</span>
 			</h1>
@@ -113,19 +113,22 @@ const reasons = [
 	</section>
 
 	{insights.length > 0 && (
-		<section aria-labelledby="insights" class="border-t border-line py-20 sm:py-28">
-			<Container class="grid gap-12">
-				<div class="flex flex-wrap items-end justify-between gap-4">
-					<h2 id="insights" class="max-w-3xl font-medium">
+		<section aria-labelledby="insights" class="overflow-x-clip border-t border-line py-20 sm:py-28">
+			<Container>
+				<InsightCarousel insights={insights} productNames={productNames} labelledBy="insights">
+					<h2 slot="heading" id="insights" class="max-w-3xl font-medium">
 						<span class="text-ink">From the team.</span>{' '}
 						<span class="text-muted">How we think about the problems our products solve.</span>
 					</h2>
-					<a href="/insights" class="inline-flex items-center gap-1 font-medium text-brand">
+					<a
+						slot="actions"
+						href="/insights"
+						class="inline-flex items-center gap-1 font-medium text-brand"
+					>
 						All insights
 						<Icon name="lucide:chevron-right" class="size-4" aria-hidden="true" />
 					</a>
-				</div>
-				<InsightList insights={insights} productNames={productNames} />
+				</InsightCarousel>
 			</Container>
 		</section>
 	)}

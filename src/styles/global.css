@@ -30,6 +30,8 @@
 	--warning: #b45309; /* fh-warning-700 */
 	--error: #b91c1c; /* fh-error-700 */
 	--info: #0369a1; /* fh-info-700 */
+	/* Deep navy for article covers: stays dark in both themes (covers are a single dark visual world). */
+	--night: #0e1a2b;
 	color-scheme: light;
 }
 
@@ -70,6 +72,7 @@
 	--color-muted: var(--muted);
 	--color-line: var(--line);
 	--color-navy: var(--navy);
+	--color-night: var(--night);
 	--color-info: var(--info);
 
 	/* State: same meaning everywhere (diagrams, chips, buttons, form feedback). Pair with a shape. */
@@ -93,6 +96,12 @@
 	--ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* entering, exiting, default */
 	--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1); /* moving on screen */
 	--ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); /* sheets, drawers */
+	--ease-reveal: cubic-bezier(
+		0.165,
+		0.84,
+		0.44,
+		1
+	); /* slow image-frame reveals (Stripe story cards), 800ms */
 
 	/*
 	 * Typography: Mona Sans (variable weight 200–900, width 75–125%), loaded by <Font> in Layout.astro.
@@ -131,6 +140,7 @@
 	--font-weight-strong: 660; /* active state only */
 
 	--shadow-window: 0 24px 48px -24px rgb(20 24 29 / 0.25); /* product UI mockups */
+	--duration-expand: 520ms; /* large layout moves, e.g. the product bento expanding; use --ease-in-out */
 
 	/* Width axis. Use via font-stretch; never set arbitrary widths. */
 	--width-condensed: 88%; /* table headers, dense labels */

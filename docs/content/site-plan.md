@@ -4,7 +4,7 @@ Status: draft for review, 2026-10-01. Source material: [current-site.md](current
 
 ## Where we are
 
-- Three products (ElevateRM, V-Track, NotifAI), **no live clients yet**, **no security certifications**, no uptime
+- Three products (ElevateRM, V-Track, Nico), **no live clients yet**, **no security certifications**, no uptime
   or monitoring commitments.
 - Real assets: deep banking knowledge (visible in the articles), working products to demo, one delivery story
   (a learning-industry operations platform built in 22 days), and the founding team.
@@ -46,12 +46,12 @@ Indian banks and NBFCs.
 | --------------------------------------------------- | ----------------------------------------------------------------------------- | --------- |
 | Heads of commercial / retail banking, RM leadership | RM productivity, turnaround time, revenue                                     | ElevateRM |
 | Credit, risk and collateral teams                   | Valuation accuracy, LTV, audit readiness, expiring documents                  | V-Track   |
-| Operations leadership                               | Fragmented workflows, controls, lifecycle visibility                          | NotifAI   |
+| Operations leadership                               | Fragmented workflows, controls, lifecycle visibility                          | Nico      |
 | CIO / CTO, procurement                              | Integration with existing systems, data handling, deployment, vendor maturity | All       |
 
 ## Message
 
-**The products are the headline.** (Decided 2026-10-01.) Visitors should meet ElevateRM, V-Track and NotifAI
+**The products are the headline.** (Decided 2026-10-01.) Visitors should meet ElevateRM, V-Track and Nico
 in the first screen and be able to see each one working within a scroll. The company story supports the products,
 not the other way round.
 
@@ -76,7 +76,7 @@ enterprise operations"), an audience, and a signature interactive diagram that o
 - Headline "Three platforms for the lending lifecycle", then the three products as the hero itself: a tab or
   switcher where each product's live diagram plays.
 - Headline "See every deal, valuation and workflow move", where deal = ElevateRM, valuation = V-Track,
-  workflow = NotifAI, each word linked to its product and lighting up its diagram.
+  workflow = Nico, each word linked to its product and lighting up its diagram.
 - Headline "Less coordination. More banking.", with the three products as cards directly under it, above the fold.
 
 ## Sitemap
@@ -86,7 +86,7 @@ enterprise operations"), an audience, and a signature interactive diagram that o
 | Home                        | Product showcase: meet all three products and see each one working                  | Request a demo             |
 | ElevateRM                   | Show the RM's day before and after; interactive deal pipeline                       | Request a demo (ElevateRM) |
 | V-Track                     | Show a valuation lifecycle with alerts; interactive collateral tracker              | Request a demo (V-Track)   |
-| NotifAI                     | Show an AI agent running a controlled workflow; the "AI thinking" state             | Request a demo (NotifAI)   |
+| Nico                        | Show an AI agent running a controlled workflow; the "AI thinking" state             | Request a demo (Nico)      |
 | Insights + article pages    | Prove expertise; bring LinkedIn articles onto the site for search                   | Related product, then demo |
 | About                       | Story, one set of values, founders and team, how we build                           | Request a demo / Careers   |
 | Careers + role pages        | Hire; roles as content entries                                                      | Apply                      |
@@ -97,7 +97,7 @@ enterprise operations"), an audience, and a signature interactive diagram that o
 No separate "Products overview" page: the home page is the overview.
 
 Navigation puts the products first, by name, at the top level (no hidden menu):
-**ElevateRM · V-Track · NotifAI** | Insights · About · Careers · **Request a demo** (button). On mobile the three
+**ElevateRM · V-Track · Nico** | Insights · About · Careers · **Request a demo** (button). On mobile the three
 products stay first in the menu. Contact lives in the footer and on the demo page.
 
 ## Page outlines
@@ -113,7 +113,7 @@ The home page is a product showcase. Most of the page is the products.
    the deal-pipeline diagram running, three capabilities, link to the product page.
 3. **V-Track section** (large): problem in one line (collateral gaps surface at renewal or audit, too late),
    the valuation-tracker diagram with an expiry warning, three capabilities, link.
-4. **NotifAI section** (large): problem in one line (workflows scattered across teams and documents), the
+4. **Nico section** (large): problem in one line (workflows scattered across teams and documents), the
    AI-thinking workflow diagram, three capabilities, link.
 5. **How they fit together:** one strip showing the lending lifecycle (relationship → collateral → operations)
    with each product's place on it. This is where the "remove friction" idea lives.
@@ -126,14 +126,14 @@ Each of the three product sections uses the same structure so they read as a fam
 unique to its product. Removed: the four generic principles (merged into About), the "leading organizations
 trust us" line.
 
-### Product page template (ElevateRM, V-Track, NotifAI)
+### Product page template (ElevateRM, V-Track, Nico)
 
 1. Hero: who it's for, what it changes, Request a demo.
 2. The problem, in the reader's words (from the articles).
 3. **How it works:** an interactive state diagram of the real workflow. This is the page's proof.
    - ElevateRM: a deal moving from lead → pricing → credit → approved, with pending actions surfacing.
    - V-Track: collateral mapped to facilities, an insurance expiry raising a warning, revaluation, approved.
-   - NotifAI: unstructured input → AI thinking → routed through controls → completed, with an audit trail.
+   - Nico: unstructured input → AI thinking → routed through controls → completed, with an audit trail.
 4. Capabilities: the three existing capability names, each with two or three plain sentences.
 5. Fits your stack: systems it works alongside. _(confirm)_
 6. Related insights.
@@ -163,7 +163,7 @@ trust us" line.
 
 ### Request a demo / Contact
 
-Form: name, work email, institution, role, product interest (ElevateRM / V-Track / NotifAI / Not sure), message
+Form: name, work email, institution, role, product interest (ElevateRM / V-Track / Nico / Not sure), message
 (optional). Honeypot + server validation; goes through the Azure Function to email.
 Beside it: what happens next (a 30-minute walkthrough of the product on sample data, _confirm format_), email,
 phone, office address, LinkedIn.

@@ -19,16 +19,23 @@ const products = defineCollection({
 
 const insights = defineCollection({
 	loader: glob({ pattern: '**/*.mdx', base: './src/content/insights' }),
-	schema: z.object({
-		title: z.string(),
-		summary: z.string().max(160),
-		date: z.coerce.date(),
-		author: z.string(),
-		product: reference('products').optional(), // omitted for company articles
-		linkedin: z.url().optional(),
-		// Drafts show in dev only. Articles stay drafts until their text is checked against LinkedIn.
-		draft: z.boolean().default(false),
-	}),
+	schema: ({ image }) =>
+		z.object({
+			title: z.string(),
+			summary: z.string().max(160),
+			date: z.coerce.date(),
+			author: z.string(),
+			product: reference('products').optional(), // omitted for company articles
+			linkedin: z.url().optional(),
+			/** Cover image (16:9). Falls back to a generated key-figure cover when missing. */
+			image: image().optional(),
+			/** 4:5 portrait crop of the same photo, used by the home carousel's tall story cards. */
+			imagePortrait: image().optional(),
+			/** Generated cover: the article's key figure, set large (InsightCover). Must come from the article. */
+			cover: z.object({ figure: z.string(), caption: z.string() }).optional(),
+			// Drafts show in dev only. Articles stay drafts until their text is checked against LinkedIn.
+			draft: z.boolean().default(false),
+		}),
 });
 
 const roles = defineCollection({

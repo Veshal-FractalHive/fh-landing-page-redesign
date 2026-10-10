@@ -52,7 +52,7 @@ modifiers for tints (`bg-state-success/10`, `ring-brand/20`), not new colours.
   in `global.css` and nothing else.
 - **Neutrals and state colours come from the component library** (ui.fractalhive.com, `--fh-*` tokens) so
   the site and the products look like one family. Keep them in sync with that library.
-- `state-active` is the brand violet. `state-flowing` (also **AI thinking**, e.g. NotifAI) is the brand
+- `state-active` is the brand violet. `state-flowing` (also **AI thinking**, e.g. Nico) is the brand
   magenta, and its moving connectors and markers use `bg-brand-gradient`.
 - The gradient is reserved for flowing/AI-thinking and at most one brand moment per page. Never put text
   in or on it, and never use `brand-3` (orange, 2.3:1) for text. Warning is amber `state-warning` with a
@@ -122,14 +122,29 @@ customer logos, stats bands and case studies (we have no clients or metrics yet;
   Always put `{' '}` between the spans (Astro strips the whitespace).
 - **Hero brand moment:** `HeroRibbon` (a WebGL shader ribbon in `--brand-*` colours, `src/components/sections/`).
   One per site, home hero only. It fades out towards the text column; never put text on it.
-- **Product bento:** `ProductBento`. Name + tagline two-tone top-left, arrow button top-right, the product UI
-  (`ProductDiagram` with `windowTitle`) bleeding off the bottom-right over `bg-brand-wash`. Narrow cards don't
-  bleed horizontally, so status text is never cut.
+- **Product bento:** `ProductBento`. Two tiles on top, one full width below. Pointer or keyboard focus on a
+  tile grows it by animating `grid-template-columns/rows` (tiles never move); it fades in its full view
+  (text column + live `ProductDiagram` window over `bg-brand-wash`), the others show a compact summary. The
+  last tile pointed at stays open. Smoothness rules (user-tested): each tile has ONE heading that never
+  changes size, position or opacity; only the `.detail` parts (problem, capability chips, workflow window)
+  and the small-tile footer fade, opacity only, no movement. Nothing is ever blank. The open tile splits
+  2:3 text/window so step labels fit. Inside diagrams, steps change by colour, weight and marker only (no
+  width-axis change: it made labels breathe and truncate). Step labels never wrap.
+- **Live status line:** small bento tiles show the focus step of their product's workflow (most urgent:
+  error, warning, AI thinking, in progress; else the last step), updated live from the window via the
+  `diagram:frame` event. Workflow data lives in `src/lib/diagrams.ts`, shared by both.
 - **Live diagrams:** `ProductDiagram` plays its workflow frames (state + note per step) while on screen,
   ~1.7 s per frame, with a pause/play button (WCAG 2.2.2), paused for reduced motion, and a still frame
   without JS. Add frames there when the product team confirms real flows.
+- **Primary button ("Request a demo"):** navy `bg-navy` (#1F3B5E ≈ library primary #1E3A5F) with
+  `text-surface`, chosen by the user; brand violet is not used for the CTA.
 - **Header:** transparent and `absolute` over the page (not sticky); the home hero runs underneath it
   (`<Layout underHeader>`). Buttons have sharp `rounded-sm` (4px) corners, like Stripe's.
+- **Article carousel** (home): Stripe-style sideways track with tall 4:5 image cards (`imagePortrait`,
+  graded crops of the same photo), kept inside the content column (no bleed past the layout guides; 3/2/1 cards). On hover only the image expands: it
+  clip-reveals about 6px (`--bleed`) wider on each side, same height, corners staying rounded (the user wants them kept) (`InsightCover bleed`, 0.8s
+  `--ease-reveal`), and the chevron in "Read the article" nudges 4px right. No card surface; no text moves.
+  If a style change doesn't show, the dev server may be serving a cached component stylesheet: touch the file. Cards are 2rem apart. The text never moves.
 - **Layout guides:** hairline vertical lines at the content column edges (in `Layout.astro`, desktop only);
   sections separated by `border-t border-line`.
 - **Three-column reasons:** small bordered icon, bold lead-in + muted sentence, chevron link.

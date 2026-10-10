@@ -9,118 +9,22 @@
  * meaningful still frame (`still`) without JavaScript.
  */
 import { Icon } from 'astro-icon/components';
-import type { State } from '../../lib/state';
+import { diagrams, type Diagram } from '../../lib/diagrams';
 import StateMarker from '../ui/StateMarker.astro';
-
-type Diagram = 'deal-pipeline' | 'valuation-tracker' | 'agent-workflow';
-type Frame = [State, string][]; // one [state, note] per step
 
 interface Props {
 	diagram: Diagram;
 	/** Product name shown in an app-window title bar, so the diagram reads as product UI (Stripe-style). */
 	windowTitle?: string;
+	/**
+	 * Selector of an ancestor whose visibility decides when the workflow plays, for when the window
+	 * itself may be clipped (e.g. a small bento tile). Defaults to the window.
+	 */
+	playWhenVisible?: string;
 	class?: string;
 }
 
-const { diagram, windowTitle, class: className } = Astro.props;
-
-/** Builds frames for a simple left-to-right pipeline: done steps settle, the current one is active. */
-function pipeline(notes: { idle: string; active: string; success: string }[]): Frame[] {
-	const frames: Frame[] = [];
-	for (let k = 0; k <= notes.length; k++) {
-		frames.push(
-			notes.map((n, i) =>
-				i < k ? ['success', n.success] : i === k ? ['active', n.active] : ['idle', n.idle],
-			),
-		);
-	}
-	return frames;
-}
-
-const diagrams: Record<
-	Diagram,
-	{ title: string; steps: string[]; frames: Frame[]; still: number }
-> = {
-	'deal-pipeline': {
-		title: 'Working capital renewal',
-		steps: ['Lead captured', 'Pricing approved', 'Credit review', 'Sanction'],
-		frames: pipeline([
-			{ idle: 'Not started', active: 'Capturing details', success: 'From RM visit' },
-			{ idle: 'Not started', active: 'Checking authority', success: 'Within RM authority' },
-			{ idle: 'Not started', active: 'Awaiting financials', success: 'Approved' },
-			{ idle: 'Not started', active: 'Preparing letter', success: 'Sanctioned' },
-		]),
-		still: 2,
-	},
-	'valuation-tracker': {
-		title: 'Collateral: commercial property',
-		steps: ['Valuation', 'Insurance', 'Legal report', 'Charge registration'],
-		frames: [
-			[
-				['success', 'Current'],
-				['success', 'Current'],
-				['success', 'Current'],
-				['error', 'Missing'],
-			],
-			[
-				['success', 'Current'],
-				['warning', 'Expires in 12 days'],
-				['success', 'Current'],
-				['error', 'Missing'],
-			],
-			[
-				['success', 'Current'],
-				['active', 'Renewal requested'],
-				['success', 'Current'],
-				['active', 'Filing with ROC'],
-			],
-			[
-				['success', 'Current'],
-				['success', 'Renewed'],
-				['success', 'Current'],
-				['active', 'Filing with ROC'],
-			],
-			[
-				['success', 'Current'],
-				['success', 'Renewed'],
-				['success', 'Current'],
-				['success', 'Registered'],
-			],
-		],
-		still: 1,
-	},
-	'agent-workflow': {
-		title: 'Pricing exception request',
-		steps: ['Request received', 'Reading documents', 'Control check', 'Approval'],
-		frames: [
-			[
-				['success', 'Email with attachment'],
-				['flowing', 'AI extracting terms'],
-				['idle', 'Queued'],
-				['idle', 'Queued'],
-			],
-			[
-				['success', 'Email with attachment'],
-				['success', 'Terms extracted'],
-				['active', 'Checking limits'],
-				['idle', 'Queued'],
-			],
-			[
-				['success', 'Email with attachment'],
-				['success', 'Terms extracted'],
-				['warning', 'Above RM limit'],
-				['active', 'Routed to credit head'],
-			],
-			[
-				['success', 'Email with attachment'],
-				['success', 'Terms extracted'],
-				['success', 'Exception logged'],
-				['success', 'Approved'],
-			],
-		],
-		still: 0,
-	},
-};
+const { diagram, windowTitle, playWhenVisible, class: className } = Astro.props;
 
 const { title, steps, frames, still } = diagrams[diagram];
 const initial = frames[still];
@@ -129,6 +33,8 @@ const initial = frames[still];
 <figure
 	data-diagram
 	data-frames={JSON.stringify(frames)}
+	data-steps={JSON.stringify(steps)}
+	data-observe={playWhenVisible}
 	class:list={[
 		'diagram overflow-hidden rounded-xl border border-line bg-panel',
 		windowTitle && 'shadow-window',
@@ -167,11 +73,11 @@ const initial = frames[still];
 				<li
 					data-step
 					data-state={initial[i][0]}
-					class="state-type grid grid-cols-[1rem_1fr_auto] items-center gap-3 rounded-lg border border-line px-3 py-2.5"
+					class="grid grid-cols-[1rem_1fr_auto] items-center gap-3 rounded-lg border border-line px-3 py-2.5"
 				>
 					<StateMarker state={initial[i][0]} />
-					<span>{label}</span>
-					<span data-note class="text-label font-regular">
+					<span class="min-w-0 truncate">{label}</span>
+					<span data-note class="text-label font-regular whitespace-nowrap">
 						{initial[i][1]}
 					</span>
 				</li>
@@ -182,11 +88,24 @@ const initial = frames[still];
 
 <style>
 	/* State colours come from data-state so the script only has to flip attributes. */
+	/*
+	 * Steps change by colour, weight and marker shape only. No width-axis change here: in a small window
+	 * it made labels breathe and truncate (the user saw it as text jumping).
+	 */
 	.diagram li {
+		font-weight: var(--font-weight-regular);
 		transition:
 			color var(--duration-fast) ease,
 			border-color var(--duration-fast) ease,
-			background-color var(--duration-fast) ease;
+			background-color var(--duration-fast) ease,
+			font-weight var(--duration-base) var(--ease-out);
+	}
+	.diagram li[data-state='active'],
+	.diagram li[data-state='flowing'] {
+		font-weight: var(--font-weight-semibold);
+	}
+	.diagram li[data-state='success'] {
+		font-weight: var(--font-weight-medium);
 	}
 	.diagram li[data-state='idle'] {
 		color: var(--idle);
@@ -216,13 +135,15 @@ const initial = frames[still];
 </style>
 
 <script>
-	type Frame = [string, string][];
+	import { focusOf, type Frame } from '../../lib/diagrams';
+
 	const STEP_MS = 1700;
 	const HOLD_MS = 2600; // pause on the last frame before looping
 	const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	document.querySelectorAll<HTMLElement>('[data-diagram]').forEach((fig) => {
 		const frames: Frame[] = JSON.parse(fig.dataset.frames ?? '[]');
+		const steps: string[] = JSON.parse(fig.dataset.steps ?? '[]');
 		const items = [...fig.querySelectorAll<HTMLElement>('[data-step]')];
 		const toggle = fig.querySelector<HTMLButtonElement>('[data-toggle]');
 		if (frames.length < 2 || !toggle) return;
@@ -240,6 +161,8 @@ const initial = frames[still];
 				const noteEl = li.querySelector<HTMLElement>('[data-note]');
 				if (noteEl) noteEl.textContent = note;
 			});
+			// Let parents mirror the step that needs attention (e.g. the bento tile's status line).
+			fig.dispatchEvent(new CustomEvent('diagram:frame', { detail: focusOf(frames[i], steps) }));
 		};
 		const schedule = () => {
 			clearTimeout(timer);
@@ -270,6 +193,13 @@ const initial = frames[still];
 			schedule();
 		});
 
+		// Parents (e.g. an expanding bento card) can replay the story from the first step.
+		fig.addEventListener('diagram:restart', () => {
+			index = 0;
+			show(0);
+			schedule();
+		});
+
 		new IntersectionObserver(
 			([entry]) => {
 				const wasVisible = visible;
@@ -282,6 +212,6 @@ const initial = frames[still];
 				schedule();
 			},
 			{ threshold: 0.4 },
-		).observe(fig);
+		).observe((fig.dataset.observe && fig.closest<HTMLElement>(fig.dataset.observe)) || fig);
 	});
 </script>

@@ -54,6 +54,10 @@ export const collections = { services };
   imply client logos, testimonials, metrics, uptime, monitoring or security badges. Every claim must be true
   today; follow the "Claims policy" section of `docs/content/site-plan.md`. Leave a clear `TODO:` for the
   user instead of inventing anything.
+- Article covers: `image` (16:9 JPG in `src/assets/insights/`): a real, relevant Unsplash photo (free licence,
+  never Unsplash+), cropped to 16:9 (`image`) and 4:5 (`imagePortrait`, for the home carousel) with the shared colour grade. Record every photo in
+  `docs/content/image-credits.md`. Without an image, `cover.figure`/`cover.caption` render a generated
+  key-figure cover; the figure must come from the article.
 - Article drafts marked `status: needs-verification` or `needs-full-text` must not be published until the
   user confirms the text.
 
